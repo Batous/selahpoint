@@ -684,9 +684,87 @@ input[type="time"] { color-scheme: dark; }
   animation: blink 1.2s ease-in-out infinite;
   margin-left: .4rem;
   vertical-align: middle;
+  border: 0;
+  background: transparent;
+  padding: 0 .15rem;
 }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.1} }
 
+/* Teen reading upgrades */
+body.FOCUS-mode header,
+body.FOCUS-mode #sponsor-banner,
+body.FOCUS-mode .sidebar,
+body.FOCUS-mode #mobile-bar,
+body.FOCUS-mode #audio-bar,
+body.FOCUS-mode #kb-modal,
+body.FOCUS-mode #prayer-alert,
+body.FOCUS-mode #prayer-banner,
+body.FOCUS-mode .menu-btn,
+body.FOCUS-mode .audio-controls {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity .3s ease;
+}
+body.FOCUS-mode .app-shell { grid-template-columns: 1fr !important; }
+body.FOCUS-mode .content-area {
+  max-width: 760px;
+  margin: 5vh auto 0;
+  padding-bottom: 5rem;
+  transition: margin .3s ease;
+}
+body.FOCUS-mode #display-card.visible,
+body.FOCUS-mode #votd-card {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+#focus-return {
+  display: none;
+  position: fixed;
+  right: .8rem;
+  bottom: .8rem;
+  z-index: 260;
+  border: 1px solid rgba(201,168,76,.45);
+  background: rgba(15,13,10,.92);
+  color: var(--gold);
+  font-family: var(--mono);
+  font-size: .7rem;
+  padding: .55rem .7rem;
+  border-radius: 4px;
+}
+body.FOCUS-mode #focus-return { display: block; }
+.tap-verse {
+  cursor: pointer;
+  display: inline;
+  touch-action: manipulation;
+}
+.audio-icon {
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 12px;
+  line-height: 1;
+  margin-left: .35rem;
+  min-width: 12px;
+  vertical-align: middle;
+  border: 0;
+  background: transparent;
+  padding: 0 .15rem;
+}
+.audio-icon.playing { color: #3B82F6; }
+#read-month {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  margin: .4rem 0 4.6rem;
+  text-align: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.FOCUS-mode *,
+  #focus-return,
+  .tap-verse,
+  .audio-icon { transition: none !important; animation: none !important; }
+}
 /* scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: rgba(0,0,0,.2); }
@@ -695,6 +773,7 @@ input[type="time"] { color-scheme: dark; }
 </style>
 </head>
 <body>
+<button id="focus-return" type="button" onclick="toggleFOCUSMode(false)">Show Controls</button>
 
 <!-- HEADER -->
 <header>
@@ -773,6 +852,7 @@ input[type="time"] { color-scheme: dark; }
       <div id="disp-body">—</div>
       <div id="audio-bar-disp" style="margin-top:1rem;"></div>
     </div>
+    <div id="read-month">Read this month: 0/30</div>
 
   </main>
 </div>
@@ -780,7 +860,7 @@ input[type="time"] { color-scheme: dark; }
 <!-- MOBILE BOTTOM BAR -->
 <div id="mobile-bar">
   <button class="mob-btn" onclick="openKb()"><span class="icon">📖</span>Bible</button>
-  <button class="mob-btn" id="mob-audio-btn" onclick="toggleAudioBar()"><span class="icon">🔊</span>Audio</button>
+  <button class="mob-btn" id="mob-audio-btn" onclick="audioPlay()"><span class="icon">🔊</span>Audio</button>
   <button class="mob-btn" onclick="toggleSidebar()"><span class="icon">⚙</span>Controls</button>
   <button class="mob-btn" onclick="openSponsor()"><span class="icon">✦</span>Sponsor</button>
 </div>
@@ -811,13 +891,13 @@ input[type="time"] { color-scheme: dark; }
 </div>
 
 <!-- Pipeline2 modules (audio engine) -->
-<script src="js/pipeline2/state.js?v=20260604-lookup-fix"></script>
-<script src="js/pipeline2/utils.js?v=20260604-lookup-fix"></script>
-<script src="js/pipeline2/maps.js?v=20260604-lookup-fix"></script>
-<script src="js/pipeline2/alarms.js?v=20260604-lookup-fix"></script>
-<script src="js/pipeline2/interceptors.js?v=20260604-lookup-fix"></script>
-<script src="js/pipeline2/engine.js?v=20260604-lookup-fix"></script>
-<script src="js/pipeline2/init.js?v=20260604-lookup-fix"></script>
+<script src="js/pipeline2/state.js?v=20260604-teen-focus"></script>
+<script src="js/pipeline2/utils.js?v=20260604-teen-focus"></script>
+<script src="js/pipeline2/maps.js?v=20260604-teen-focus"></script>
+<script src="js/pipeline2/alarms.js?v=20260604-teen-focus"></script>
+<script src="js/pipeline2/interceptors.js?v=20260604-teen-focus"></script>
+<script src="js/pipeline2/engine.js?v=20260604-teen-focus"></script>
+<script src="js/pipeline2/init.js?v=20260604-teen-focus"></script>
 
 <script>
 'use strict';
@@ -925,11 +1005,19 @@ loadVOTD();
 ══════════════════════════════════════════════ */
 let _audioBarVisible = false;
 function toggleAudioBar() {
-  _audioBarVisible = !_audioBarVisible;
-  document.getElementById('audio-bar').classList.toggle('visible', _audioBarVisible);
-  const btn = document.getElementById('btn-audio-toggle');
-  if (btn) btn.textContent = _audioBarVisible ? 'Hide Audio Controls' : 'Show Audio Controls';
-  document.getElementById('mob-audio-btn').classList.toggle('active', _audioBarVisible);
+  audioPlay();
+}
+function setAudioButtons(isPlaying) {
+  const playBtn = document.getElementById('btn-play');
+  const pauseBtn = document.getElementById('btn-pause');
+  const np = document.getElementById('audio-np');
+  const sideBtn = document.getElementById('btn-audio-toggle');
+  const mobileBtn = document.getElementById('mob-audio-btn');
+  if (playBtn) playBtn.style.display = isPlaying ? 'none' : '';
+  if (pauseBtn) pauseBtn.style.display = isPlaying ? '' : 'none';
+  if (np && window._currentRef) np.textContent = '♪ ' + window._currentRef;
+  if (sideBtn) sideBtn.textContent = isPlaying ? 'Pause Audio' : 'Play Audio';
+  if (mobileBtn) mobileBtn.classList.toggle('active', !!isPlaying);
 }
 
 /* ══════════════════════════════════════════════
@@ -940,32 +1028,43 @@ function toggleAudioBar() {
 let _vol = 70, _muted = false;
 
 function audioPlay()  {
-  if (typeof window.SC_audioPlay  === 'function') window.SC_audioPlay();
-  document.getElementById('btn-play').style.display  = 'none';
-  document.getElementById('btn-pause').style.display = '';
-  const np = document.getElementById('audio-np');
-  if (np && window._currentRef) np.textContent = '♪ ' + window._currentRef;
+  if (currentAudio) {
+    if (currentAudio.paused) {
+      currentAudio.play().then(() => setAudioButtons(true)).catch(() => setAudioButtons(false));
+    } else {
+      currentAudio.pause();
+      setAudioButtons(false);
+    }
+    return;
+  }
+  const range = window._currentAudioRange;
+  const verses = window._currentAudioVerses || [];
+  if (range && verses.length && typeof playVoiceFromCdn === 'function') {
+    setAudioButtons(true);
+    playVoiceFromCdn(range, verses).finally(() => setAudioButtons(false));
+  }
 }
 function audioPause() {
-  if (typeof window.SC_audioPause === 'function') window.SC_audioPause();
-  document.getElementById('btn-play').style.display  = '';
-  document.getElementById('btn-pause').style.display = 'none';
+  if (currentAudio) currentAudio.pause();
+  setAudioButtons(false);
 }
 function audioStop()  {
-  if (typeof window.SC_audioStop  === 'function') window.SC_audioStop();
-  document.getElementById('btn-play').style.display  = '';
-  document.getElementById('btn-pause').style.display = 'none';
-  document.getElementById('audio-np').textContent = '—';
+  if (currentAudio) { try { currentAudio.pause(); } catch(e) {} currentAudio = null; }
+  updateVerseIcon(null, 'play');
+  setAudioButtons(false);
+  const np = document.getElementById('audio-np');
+  if (np) np.textContent = '—';
 }
 function volChange(delta) {
   _vol = Math.max(0, Math.min(100, _vol + delta));
-  document.getElementById('vol-label').textContent = _vol + '%';
-  if (typeof window.SC_setVolume === 'function') window.SC_setVolume(_vol / 100);
+  const label = document.getElementById('vol-label');
+  if (label) label.textContent = _vol + '%';
+  if (typeof setVolume === 'function') setVolume(_vol / 100);
 }
 function audioMute() {
   _muted = !_muted;
   const btn = document.getElementById('btn-mute');
-  btn.classList.toggle('on', _muted);
+  if (btn) btn.classList.toggle('on', _muted);
   if (typeof window.SC_setMute === 'function') window.SC_setMute(_muted);
 }
 
@@ -1178,6 +1277,8 @@ async function fetchAndDisplay(mode) {
   try {
     const bibleData = await getOfflineBibleData(jsonPath);
     const verses = extractVerses(bibleData, chStart, vsStart, chEnd, vsEnd, bookName);
+    window._currentAudioRange = { book: bookName, bible_version: 'KJV', chapter_start: chStart, verse_start: vsStart, chapter_end: chEnd, verse_end: vsEnd };
+    window._currentAudioVerses = verses;
     renderDisplayCard(ref, verses, mode);
 
     if (verses.length && typeof playVoiceFromCdn === 'function') {
@@ -1196,42 +1297,78 @@ async function fetchAndDisplay(mode) {
     bodyEl.textContent = 'Could not load scripture from local Bible data. (' + err.message + ')';
   }
 }
+function getBookFromRef(ref) {
+  const match = String(ref || '').match(/^(.+?)\s+\d/);
+  return match ? match[1].trim() : (BOOK_NAMES[_kbBook] || _kbBook || String(ref || '').trim());
+}
+function createVerseAudioLine(book, verseData, fallbackVerse) {
+  const chapter = parseInt(verseData.chapter || _kbCh, 10) || 1;
+  const verse = parseInt(verseData.verse || verseData.verseNumber || fallbackVerse || _kbVs, 10) || 1;
+  const text = String(verseData.text || verseData.content || verseData || '');
+  const verseId = `${book}|${chapter}|${verse}`;
+  const wrap = document.createElement('span');
+  wrap.className = 'verse-text tap-verse';
+  wrap.dataset.verse = verseId;
+  wrap.dataset.book = book;
+  wrap.dataset.chapter = chapter;
+  wrap.dataset.verseNumber = verse;
+  wrap.appendChild(document.createTextNode(text + ' '));
+  const icon = document.createElement('button');
+  icon.type = 'button';
+  icon.className = 'audio-icon';
+  icon.textContent = '🔈';
+  icon.title = 'Play verse';
+  icon.setAttribute('aria-label', 'Play verse');
+  const safeVerseId = verseId.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  icon.setAttribute('onclick', `event.stopPropagation(); this.classList.add('playing'); this.textContent='🔊'; if (typeof playVerse === 'function') playVerse('${safeVerseId}');`);
+  wrap.setAttribute('onclick', `if (!event.target.closest('.audio-icon')) { const i=this.querySelector('.audio-icon'); if (i) { i.classList.add('playing'); i.textContent='🔊'; } if (typeof playVerse === 'function') playVerse('${safeVerseId}'); }`);
+  const runVerseTap = event => {
+    if (event) event.stopPropagation();
+    if (typeof playVerse === 'function') playVerse(verseId);
+    else if (typeof window.playVerse === 'function') window.playVerse(verseId);
+  };  icon.addEventListener('click', runVerseTap);
+  wrap.appendChild(icon);
+  wrap.addEventListener('click', event => {
+    if (event.target.closest('.audio-icon')) return;
+    runVerseTap(event);
+  });
+  return wrap;
+}
 function renderDisplayCard(ref, data, mode) {
   const refEl  = document.getElementById('disp-ref');
   const bodyEl = document.getElementById('disp-body');
+  if (!refEl || !bodyEl) return;
   refEl.textContent = ref;
 
-  // Normalise data: expect array of {verse, text} or {text}
   let verses = [];
   if (Array.isArray(data)) {
     verses = data;
   } else if (data.verses) {
     verses = data.verses;
   } else if (data.text) {
-    verses = [{ verse: _kbVs || 1, text: data.text }];
+    verses = [{ chapter: _kbCh || 1, verse: _kbVs || 1, text: data.text }];
   }
 
-  if (mode === 'verse' && verses.length === 1) {
-    bodyEl.className   = '';
-    bodyEl.textContent = verses[0].text || verses[0];
-  } else {
-    bodyEl.className = 'multiverse';
-    bodyEl.innerHTML = '';
-    verses.forEach(v => {
-      const num  = document.createElement('sup');
-      num.className   = 'verse-num';
-      num.textContent = (v.verse || v.verseNumber || '') + ' ';
-      const span = document.createElement('span');
-      span.textContent = (v.text || v.content || v) + ' ';
+  const book = window._currentAudioRange?.book || getBookFromRef(ref);
+  bodyEl.innerHTML = '';
+  bodyEl.className = (mode === 'verse' && verses.length === 1) ? '' : 'multiverse';
+  verses.forEach((v, idx) => {
+    if (!(mode === 'verse' && verses.length === 1)) {
+      const num = document.createElement('sup');
+      num.className = 'verse-num';
+      num.textContent = (v.verse || v.verseNumber || idx + 1) + ' ';
       bodyEl.appendChild(num);
-      bodyEl.appendChild(span);
-    });
-  }
+    }
+    bodyEl.appendChild(createVerseAudioLine(book, v, idx + 1));
+    bodyEl.appendChild(document.createTextNode(' '));
+  });
 
   window._currentRef  = ref;
-  window._currentText = verses.map(v => v.text || v).join(' ');
+  window._currentText = verses.map(v => v.text || v.content || v).join(' ');
+  window._currentAudioVerses = verses;
   const np = document.getElementById('audio-np');
   if (np) np.textContent = '♪ ' + ref;
+  if (typeof saveReadDay === 'function') saveReadDay();
 }
 
 /* ══════════════════════════════════════════════

@@ -175,6 +175,87 @@ function playVoiceFromCdn(range, verses = []) {
   });
 }
 
+function buildVerseAudioUrl(book, chapter, verse) {
+  const lookupKey = String(book || '').trim().toLowerCase();
+  const bookNum = BIBLE_NUM_MAP[lookupKey];
+  if (!bookNum) return '';
+  const pad = n => String(n).padStart(3, '0');
+  return `${R2_BASE}/kjv/B${pad(bookNum)}_C${pad(chapter)}_V${pad(verse)}.mp3`;
+}
+
+function updateVerseIcon(verseId, state) {
+  document.querySelectorAll('.audio-icon.playing').forEach(icon => {
+    icon.classList.remove('playing');
+    icon.textContent = '🔈';
+    icon.title = 'Play verse';
+  });
+  if (!verseId || state !== 'pause') return;
+  const icon = document.querySelector(`[data-verse="${CSS.escape(verseId)}"] .audio-icon`);
+  if (icon) {
+    icon.classList.add('playing');
+    icon.textContent = '🔊';
+    icon.title = 'Pause verse';
+  }
+}
+
+function playVerse(verseId) {
+  const verseEl = document.querySelector(`[data-verse="${CSS.escape(verseId)}"]`);
+  if (!verseEl) return;
+  if (currentAudio && currentAudio.dataset.verseId === verseId) {
+    currentAudio.pause();
+    currentAudio = null;
+    updateVerseIcon(verseId, 'play');
+    return;
+  }
+  if (currentAudio) {
+    const oldVerseId = currentAudio.dataset.verseId;
+    try { currentAudio.pause(); } catch(e) {}
+    updateVerseIcon(oldVerseId, 'play');
+  }
+  const audioUrl = buildVerseAudioUrl(verseEl.dataset.book, verseEl.dataset.chapter, verseEl.dataset.verseNumber);
+  if (!audioUrl) { addLog(`Audio skipped: ${verseEl.dataset.book}`, 'warn'); return; }
+  currentAudio = new Audio(audioUrl);
+  currentAudio.dataset.verseId = verseId;
+  currentAudio.volume = currentVolume;
+  currentAudio.muted = isMuted;
+  currentAudio.onended = () => { updateVerseIcon(verseId, 'play'); currentAudio = null; };
+  currentAudio.onerror = () => { updateVerseIcon(verseId, 'play'); currentAudio = null; };
+  currentAudio.play().then(() => updateVerseIcon(verseId, 'pause')).catch(() => updateVerseIcon(verseId, 'play'));
+}
+
+function saveReadDay(dateValue = new Date()) {
+  const key = 'readDays';
+  const day = dateValue.toISOString().slice(0, 10);
+  let days = [];
+  try { days = JSON.parse(localStorage.getItem(key) || '[]'); }
+  catch(e) { days = []; }
+  if (!days.includes(day)) {
+    days.push(day);
+    localStorage.setItem(key, JSON.stringify(days));
+  }
+  renderReadMonth();
+}
+
+function renderReadMonth() {
+  const el = document.getElementById('read-month');
+  if (!el) return;
+  let days = [];
+  try { days = JSON.parse(localStorage.getItem('readDays') || '[]'); }
+  catch(e) { days = []; }
+  const month = new Date().toISOString().slice(0, 7);
+  const count = days.filter(day => String(day).startsWith(month)).length;
+  el.textContent = `Read this month: ${count}/30`;
+}
+
+window.playVerse = playVerse;
+window.updateVerseIcon = updateVerseIcon;
+window.saveReadDay = saveReadDay;
+window.renderReadMonth = renderReadMonth;
+window.SC_audioPlay = () => { if (currentAudio) currentAudio.paused ? currentAudio.play().catch(() => {}) : currentAudio.pause(); };
+window.SC_audioPause = () => { if (currentAudio) currentAudio.pause(); };
+window.SC_audioStop = () => { if (currentAudio) { try { currentAudio.pause(); } catch(e) {} currentAudio = null; } updateVerseIcon(null, 'play'); };
+window.SC_setVolume = value => setVolume(value);
+window.SC_setMute = value => { isMuted = !!value; if (currentAudio) currentAudio.muted = isMuted; if (bgMusic) bgMusic.muted = isMuted; };
 function startSlideTimer(durationMs) {
   const bar  = document.getElementById('slide-timer-bar');
   const wrap = document.getElementById('slide-timer-wrap');

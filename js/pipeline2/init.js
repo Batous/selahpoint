@@ -1,5 +1,14 @@
 'use strict';
 
+function toggleFOCUSMode(forceState) {
+  const nextState = typeof forceState === 'boolean'
+    ? forceState
+    : !document.body.classList.contains('FOCUS-mode');
+  document.body.classList.toggle('FOCUS-mode', nextState);
+  localStorage.setItem('FOCUSMode', String(nextState));
+}
+window.toggleFOCUSMode = toggleFOCUSMode;
+
 /* ══════════════════════════════════════════════════════
    DOM LIFECYCLE EVENT LISTENERS & HOOKS
 ══════════════════════════════════════════════════════ */
@@ -8,6 +17,27 @@ window.addEventListener('DOMContentLoaded', () => {
   loadAndRenderSlugs();
   initBibleKeyboard(); // <-- Add this single line here
   hideBibleKeyboard();
+  if (localStorage.getItem('FOCUSMode') === 'true') document.body.classList.add('FOCUS-mode');
+  let lastHeaderTap = 0;
+  const pageHeader = document.querySelector('header');
+  if (pageHeader) {
+    pageHeader.addEventListener('dblclick', () => toggleFOCUSMode());
+    pageHeader.addEventListener('touchend', () => {
+      const now = Date.now();
+      if (now - lastHeaderTap < 320) toggleFOCUSMode();
+      lastHeaderTap = now;
+    }, { passive: true });
+  }
+  document.addEventListener('keydown', event => {
+    if (event.key && event.key.toLowerCase() === 'g' && !event.metaKey && !event.ctrlKey && !event.altKey) toggleFOCUSMode();
+  });
+  if (typeof renderReadMonth === 'function') renderReadMonth();
+  document.addEventListener('click', event => {
+    const delegatedVerseTap = event.target.closest('[data-verse]');
+    if (!delegatedVerseTap) return;
+    event.preventDefault();
+    if (typeof playVerse === 'function') playVerse(delegatedVerseTap.dataset.verse);
+  });
 
   function toggleControlPanel(forceCollapse) {
     const panel   = document.querySelector('.left-col .panel');
@@ -113,7 +143,7 @@ window.addEventListener('DOMContentLoaded', () => {
   bindClick('btn-vol-down', () => setVolume(currentVolume - 0.1));
   bindClick('btn-vol-up', () => setVolume(currentVolume + 0.1));
 
- // APRÈS  
+ // Manual lookup  
 const lookupBtn = document.getElementById('btn-lookup');
 if (lookupBtn) lookupBtn.addEventListener('click', async () => {
     const book = document.getElementById('ml-book').value.trim();
