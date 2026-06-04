@@ -35,18 +35,6 @@ window.addEventListener('DOMContentLoaded', () => {
   setInterval(tickClock, 1000);
 
 // Safely guard the event listeners
-  const btnClear = document.getElementById('btn-clear');
-  if (btnClear) btnClear.addEventListener('click', clearLog);
-
-  const btnHelp = document.getElementById('btn-help');
-  if (btnHelp) {
-    btnHelp.addEventListener('click', () => {
-      const panel = document.getElementById('log-panel');
-      if (panel) panel.classList.toggle('log-visible');
-    });
-  }
-
-  const btnStop = document.getElementById('btn-stop');
   if (btnStop) {
     btnStop.addEventListener('click', () => {
       currentZapSessionId++;
