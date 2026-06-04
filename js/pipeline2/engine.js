@@ -556,6 +556,16 @@ async function loadAndRenderSlugs() {
     { id: "540532e7-d370-4a99-a713-3473ba2945c5", name: "TEST CHANNEL"       }
   ];
 
+// Guard the grid container
+  if (!grid) {
+    console.warn("slug-grid element not found in HTML, skipping render.");
+    return;
+  }
+
+  if (!grid) {
+    console.warn('slug-grid container element not found, skipping render.');
+    return;
+  }
   grid.innerHTML = '';
   channels.forEach(ch => {
     const btn           = document.createElement('button');

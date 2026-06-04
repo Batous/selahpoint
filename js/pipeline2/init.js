@@ -34,14 +34,38 @@ window.addEventListener('DOMContentLoaded', () => {
   tickClock();
   setInterval(tickClock, 1000);
 
-  document.getElementById('btn-clear').addEventListener('click', clearLog);
+// Safely guard the event listeners
+  const btnClear = document.getElementById('btn-clear');
+  if (btnClear) btnClear.addEventListener('click', clearLog);
 
-  document.getElementById('btn-help').addEventListener('click', () => {
-    const panel = document.getElementById('log-panel');
-    if (panel) panel.classList.toggle('log-visible');
-  });
+  const btnHelp = document.getElementById('btn-help');
+  if (btnHelp) {
+    btnHelp.addEventListener('click', () => {
+      const panel = document.getElementById('log-panel');
+      if (panel) panel.classList.toggle('log-visible');
+    });
+  }
 
-  document.getElementById('btn-stop').addEventListener('click', () => {
+  const btnStop = document.getElementById('btn-stop');
+  if (btnStop) {
+    btnStop.addEventListener('click', () => {
+      currentZapSessionId++;
+    });
+  }
+
+  const btnClear = document.getElementById('btn-clear');
+  if (btnClear) btnClear.addEventListener('click', clearLog);
+
+  const btnHelp = document.getElementById('btn-help');
+  if (btnHelp) {
+    btnHelp.addEventListener('click', () => {
+      const panel = document.getElementById('log-panel');
+      if (panel) panel.classList.toggle('log-visible');
+    });
+  }
+
+  const btnStop = document.getElementById('btn-stop');
+  if (btnStop) btnStop.addEventListener('click', () => {
     currentZapSessionId++;
     if (currentAudio) { try { currentAudio.pause(); } catch(e) {} currentAudio = null; }
     clearTimeout(_slideTimerTimeout);
