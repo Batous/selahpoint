@@ -545,7 +545,11 @@ function getCurrentManualRange() {
    SLUG CHANNEL GRID
 ══════════════════════════════════════════════════════ */
 async function loadAndRenderSlugs() {
-  const grid     = document.getElementById('slug-grid');
+  const grid = document.getElementById('slug-grid');
+  if (!grid) {
+    console.warn('slug-grid element not found in HTML, skipping render.');
+    return;
+  }
   const channels = [
     { id: "61580e26-3bcf-4e9d-b312-4a7c6fc5681c", name: "LOVE"              },
     { id: "b7af28b1-5fb6-4642-aa36-297ee356eef2", name: "Morning Devotional" },
@@ -556,16 +560,7 @@ async function loadAndRenderSlugs() {
     { id: "540532e7-d370-4a99-a713-3473ba2945c5", name: "TEST CHANNEL"       }
   ];
 
-// Guard the grid container
-  if (!grid) {
-    console.warn("slug-grid element not found in HTML, skipping render.");
-    return;
-  }
 
-  if (!grid) {
-    console.warn('slug-grid container element not found, skipping render.');
-    return;
-  }
   grid.innerHTML = '';
   channels.forEach(ch => {
     const btn           = document.createElement('button');

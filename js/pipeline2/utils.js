@@ -15,14 +15,20 @@ function escHtml(s) {
 }
 
 function addLog(msg, level = 'info') {
+  if (!logEl) {
+    const logFn = level === 'err' ? console.error : level === 'warn' ? console.warn : console.log;
+    logFn(`[${level}] ${msg}`);
+    return;
+  }
   const e = document.createElement('div');
   e.className = `log-entry ${level}`;
   e.innerHTML = `<span class="ts">${ts()}</span><span class="msg">${escHtml(msg)}</span>`;
   logEl.appendChild(e);
   logEl.scrollTop = logEl.scrollHeight;
 }
-
-function clearLog() { logEl.textContent = ''; }
+function clearLog() {
+  if (logEl) logEl.textContent = '';
+}
 
 async function fetchJSON(url, timeoutMs = 15000) {
   const ctrl  = new AbortController();

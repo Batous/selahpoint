@@ -811,13 +811,13 @@ input[type="time"] { color-scheme: dark; }
 </div>
 
 <!-- Pipeline2 modules (audio engine) -->
-<script src="js/pipeline2/state.js"></script>
-<script src="js/pipeline2/utils.js"></script>
-<script src="js/pipeline2/maps.js"></script>
-<script src="js/pipeline2/alarms.js"></script>
-<script src="js/pipeline2/interceptors.js"></script>
-<script src="js/pipeline2/engine.js"></script>
-<script src="js/pipeline2/init.js"></script>
+<script src="js/pipeline2/state.js?v=20260604-lookup-fix"></script>
+<script src="js/pipeline2/utils.js?v=20260604-lookup-fix"></script>
+<script src="js/pipeline2/maps.js?v=20260604-lookup-fix"></script>
+<script src="js/pipeline2/alarms.js?v=20260604-lookup-fix"></script>
+<script src="js/pipeline2/interceptors.js?v=20260604-lookup-fix"></script>
+<script src="js/pipeline2/engine.js?v=20260604-lookup-fix"></script>
+<script src="js/pipeline2/init.js?v=20260604-lookup-fix"></script>
 
 <script>
 'use strict';
@@ -1135,46 +1135,67 @@ function addModeBtn(parent, label, fn) {
 }
 
 /* ══════════════════════════════════════════════
-   FETCH + DISPLAY  (calls /api/verses)
+   FETCH + DISPLAY  (offline KJV JSON)
 ══════════════════════════════════════════════ */
+async function getOfflineBibleData(jsonPath) {
+  window.bibleCache = window.bibleCache || {};
+  if (Array.isArray(window.bibleData) || (window.bibleData && typeof window.bibleData === 'object')) return window.bibleData;
+  if (window.bibleCache[jsonPath]) return window.bibleCache[jsonPath];
+  const data = (typeof fetchJSON === 'function')
+    ? await fetchJSON(jsonPath)
+    : await fetch(jsonPath).then(res => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      });
+  window.bibleCache[jsonPath] = data;
+  window.bibleData = data;
+  return data;
+}
+
 async function fetchAndDisplay(mode) {
   closeKb();
   const card   = document.getElementById('display-card');
   const refEl  = document.getElementById('disp-ref');
   const bodyEl = document.getElementById('disp-body');
+  if (!card || !refEl || !bodyEl) return;
 
   card.classList.add('visible');
-  refEl.textContent  = 'Loading…';
+  refEl.textContent  = 'Loading...';
   bodyEl.textContent = '';
   bodyEl.className   = 'multiverse';
   card.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+  const jsonPath = '/data/bibles/kjv.json';
+  const bookName = BOOK_NAMES[_kbBook] || _kbBook;
+  const chStart  = parseInt(_kbCh, 10) || 1;
+  const vsStart  = mode === 'verse' ? (parseInt(_kbVs, 10) || 1) : 1;
+  const chEnd    = mode === 'book' ? ((BIBLE_CAPS[bookName] && BIBLE_CAPS[bookName].ch) || chStart) : chStart;
+  const vsEnd    = mode === 'verse' ? vsStart : 999;
+  const ref      = mode === 'verse' ? `${bookName} ${chStart}:${vsStart}`
+                 : mode === 'chapter' ? `${bookName} ${chStart}`
+                 : bookName;
+
   try {
-    let url = '', ref = '';
+    const bibleData = await getOfflineBibleData(jsonPath);
+    const verses = extractVerses(bibleData, chStart, vsStart, chEnd, vsEnd, bookName);
+    renderDisplayCard(ref, verses, mode);
 
-    if (mode === 'verse') {
-      url = `${SP_CONFIG.apiBase}/api/verses?book=${_kbBook}&chapter=${_kbCh}&verse=${_kbVs}&version=KJV`;
-      ref = `${BOOK_NAMES[_kbBook]||_kbBook} ${_kbCh}:${_kbVs}`;
-    } else if (mode === 'chapter') {
-      url = `${SP_CONFIG.apiBase}/api/verses?book=${_kbBook}&chapter=${_kbCh}&version=KJV`;
-      ref = `${BOOK_NAMES[_kbBook]||_kbBook} ${_kbCh}`;
-    } else {
-      url = `${SP_CONFIG.apiBase}/api/verses?book=${_kbBook}&version=KJV`;
-      ref = BOOK_NAMES[_kbBook] || _kbBook;
+    if (verses.length && typeof playVoiceFromCdn === 'function') {
+      const range = {
+        book: bookName,
+        bible_version: 'KJV',
+        chapter_start: chStart,
+        verse_start: vsStart,
+        chapter_end: chEnd,
+        verse_end: vsEnd
+      };
+      playVoiceFromCdn(range, verses).catch(err => console.warn('Audio playback failed:', err));
     }
-
-    const res  = await fetch(url);
-    if (!res.ok) throw new Error('API ' + res.status);
-    const data = await res.json();
-
-    renderDisplayCard(ref, data, mode);
-
   } catch (err) {
     refEl.textContent  = 'Error';
-    bodyEl.textContent = 'Could not load scripture. Check connection. (' + err.message + ')';
+    bodyEl.textContent = 'Could not load scripture from local Bible data. (' + err.message + ')';
   }
 }
-
 function renderDisplayCard(ref, data, mode) {
   const refEl  = document.getElementById('disp-ref');
   const bodyEl = document.getElementById('disp-body');

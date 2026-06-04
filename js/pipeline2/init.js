@@ -14,9 +14,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const leftCol = document.querySelector('.left-col');
     const btn     = document.getElementById('btn-collapse');
     const gearBtn = document.getElementById('drawer-toggle');
-    const collapse = forceCollapse ?? !panel.classList.contains('collapsed');
-    panel.classList.toggle('collapsed', collapse);
-    btn.textContent = collapse ? '>>>' : '<<<';
+    const collapse = forceCollapse ?? !(panel && panel.classList.contains('collapsed'));
+    if (panel) panel.classList.toggle('collapsed', collapse);
+    if (btn) btn.textContent = collapse ? '>>>' : '<<<';
     // Drive drawer: hide left-col during playback, show on pause/stop
     if (leftCol) leftCol.classList.toggle('drawer-hidden', !!collapse);
     if (gearBtn) gearBtn.classList.toggle('visible', !!collapse);
@@ -33,37 +33,28 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   tickClock();
   setInterval(tickClock, 1000);
-
-// Safely guard the event listeners
-  if (btnStop) {
-    btnStop.addEventListener('click', () => {
-      currentZapSessionId++;
-    });
+  function bindClick(id, handler) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', handler);
+    return el;
   }
 
-  const btnClear = document.getElementById('btn-clear');
-  if (btnClear) btnClear.addEventListener('click', clearLog);
-
-  const btnHelp = document.getElementById('btn-help');
-  if (btnHelp) {
-    btnHelp.addEventListener('click', () => {
-      const panel = document.getElementById('log-panel');
-      if (panel) panel.classList.toggle('log-visible');
-    });
-  }
-
-  const btnStop = document.getElementById('btn-stop');
-  if (btnStop) btnStop.addEventListener('click', () => {
+  const btnClear = bindClick('btn-clear', clearLog);
+  const btnHelp = bindClick('btn-help', () => {
+    const panel = document.getElementById('log-panel');
+    if (panel) panel.classList.toggle('log-visible');
+  });
+  const btnStop = bindClick('btn-stop', () => {
     currentZapSessionId++;
     if (currentAudio) { try { currentAudio.pause(); } catch(e) {} currentAudio = null; }
     clearTimeout(_slideTimerTimeout);
     if (slideWaitResolve) { slideWaitResolve('stop'); slideWaitResolve = null; }
     if (bgMusic) { bgMusic.pause(); bgMusic = null; }
     resetRunUI();
-    addLog('⏹ Stopped by user', 'warn');
+    addLog('Stop requested by user', 'warn');
   });
 
-  document.getElementById('btn-playpause').addEventListener('click', () => {
+  bindClick('btn-playpause', () => {
     const btn = document.getElementById('btn-playpause');
     if (isPaused) {
       isPaused = false;
@@ -79,36 +70,36 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  document.getElementById('btn-next').addEventListener('click', () => {
+  bindClick('btn-next', () => {
     skipSignal = 'next';
     isPaused   = false;
     const pp = document.getElementById('btn-playpause');
-    pp.textContent = '⏸'; pp.title = 'Pause'; pp.classList.remove('t-on');
+    if (pp) { pp.textContent = '⏸'; pp.title = 'Pause'; pp.classList.remove('t-on'); }
     if (currentAudio) { try { currentAudio.pause(); } catch(e) {} currentAudio = null; }
     clearTimeout(_slideTimerTimeout);
     if (slideWaitResolve) { slideWaitResolve('next'); slideWaitResolve = null; }
   });
 
-  document.getElementById('btn-prev').addEventListener('click', () => {
+  bindClick('btn-prev', () => {
     skipSignal = 'prev';
     isPaused   = false;
     const pp = document.getElementById('btn-playpause');
-    pp.textContent = '⏸'; pp.title = 'Pause'; pp.classList.remove('t-on');
+    if (pp) { pp.textContent = '⏸'; pp.title = 'Pause'; pp.classList.remove('t-on'); }
     if (currentAudio) { try { currentAudio.pause(); } catch(e) {} currentAudio = null; }
     clearTimeout(_slideTimerTimeout);
     if (slideWaitResolve) { slideWaitResolve('prev'); slideWaitResolve = null; }
   });
 
-  document.getElementById('btn-channel-swap').addEventListener('click', () => {
+  bindClick('btn-channel-swap', () => {
     toggleControlPanel(false);
     document.querySelectorAll('.slug-btn').forEach(b => b.disabled = false);
   });
 
-  document.getElementById('btn-bible-keyboard').addEventListener('click', () => {
+  bindClick('btn-bible-keyboard', () => {
     showBibleKeyboard();
   });
 
-  document.getElementById('btn-mute').addEventListener('click', () => {
+  bindClick('btn-mute', () => {
     isMuted = !isMuted;
     const btn = document.getElementById('btn-mute');
     btn.textContent = isMuted ? '🔈' : '🔇';
@@ -119,8 +110,8 @@ window.addEventListener('DOMContentLoaded', () => {
     addLog(isMuted ? '🔇 Muted' : '🔊 Unmuted', 'dim');
   });
 
-  document.getElementById('btn-vol-down').addEventListener('click', () => setVolume(currentVolume - 0.1));
-  document.getElementById('btn-vol-up').addEventListener('click',   () => setVolume(currentVolume + 0.1));
+  bindClick('btn-vol-down', () => setVolume(currentVolume - 0.1));
+  bindClick('btn-vol-up', () => setVolume(currentVolume + 0.1));
 
  // APRÈS  
 const lookupBtn = document.getElementById('btn-lookup');
