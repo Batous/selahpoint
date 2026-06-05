@@ -346,10 +346,6 @@ input[type="time"] { color-scheme: dark; }
   flex-wrap: wrap;
 }
 #audio-bar.visible { display: flex; }
-@media(max-width: 900px), (hover: none) and (pointer: coarse) {
-  #audio-bar.visible { display: none !important; }
-  body.controls-open #audio-bar.visible { display: flex !important; }
-}
 #audio-np {
   font-family: var(--mono);
   font-size: .72rem;
@@ -431,7 +427,7 @@ input[type="time"] { color-scheme: dark; }
   border-top: 1px solid var(--border);
   padding: .6rem 1rem;
   gap: .5rem;
-  z-index: 50;
+  z-index: 130;
   backdrop-filter: blur(12px);
 }
 @media(max-width: 900px), (hover: none) and (pointer: coarse) { #mobile-bar { display: flex; } }
@@ -824,19 +820,11 @@ body.FOCUS-mode #focus-return { display: block; }
           <input type="time" id="inp-pt" aria-label="Prayer time" />
           <input type="text" id="inp-pl" placeholder="Label" aria-label="Prayer label" style="flex:1.4;" />
         </div>
-        <button class="side-btn primary" onclick="addAlarm()" style="margin-top:.4rem;">＋ Add Alarm</button>
+
         <div class="alarm-list" id="alarm-list"></div>
         <p class="alarm-hint">Voice reminder 2 min before · orange border at alarm time (3 min)</p>
       </div>
 
-      <div>
-        <div class="panel-title">📖 Scripture</div>
-        <button class="side-btn primary" onclick="openKb()">Open Bible Keyboard</button>
-      </div>
-      <div>
-        <div class="panel-title">🔊 Audio</div>
-        <button class="side-btn" id="btn-sidebar-audio" onclick="audioPlay()">Play Audio</button>
-      </div>
     </div>
 
     <div style="padding-top:.8rem;border-top:1px solid var(--border);margin-top:.5rem;flex-shrink:0;">
@@ -878,7 +866,11 @@ body.FOCUS-mode #focus-return { display: block; }
 
 <!-- MOBILE BOTTOM BAR -->
 <div id="mobile-bar">
+  <button class="mob-btn" onclick="openKb()"><span class="icon">📖</span>Bible</button>
+  <button class="mob-btn" id="mob-audio-btn" onclick="audioPlay()"><span class="icon">🔊</span>Audio</button>
+  <button class="mob-btn" id="mob-alarm-btn" onclick="mobileAddAlarm()"><span class="icon">＋</span>Alarm</button>
   <button class="mob-btn" id="mob-controls-btn" onclick="toggleSidebar()"><span class="icon">⚙</span>Controls</button>
+  <button class="mob-btn" onclick="openSponsor()"><span class="icon">✦</span>Sponsor</button>
 </div>
 
 <!-- BIBLE KEYBOARD MODAL (bottom sheet) -->
@@ -907,13 +899,13 @@ body.FOCUS-mode #focus-return { display: block; }
 </div>
 
 <!-- Pipeline2 modules (audio engine) -->
-<script src="js/pipeline2/state.js?v=20260605-controls3"></script>
-<script src="js/pipeline2/utils.js?v=20260605-controls3"></script>
-<script src="js/pipeline2/maps.js?v=20260605-controls3"></script>
-<script src="js/pipeline2/alarms.js?v=20260605-controls3"></script>
-<script src="js/pipeline2/interceptors.js?v=20260605-controls3"></script>
-<script src="js/pipeline2/engine.js?v=20260605-controls3"></script>
-<script src="js/pipeline2/init.js?v=20260605-controls3"></script>
+<script src="js/pipeline2/state.js?v=20260605-fastbar1"></script>
+<script src="js/pipeline2/utils.js?v=20260605-fastbar1"></script>
+<script src="js/pipeline2/maps.js?v=20260605-fastbar1"></script>
+<script src="js/pipeline2/alarms.js?v=20260605-fastbar1"></script>
+<script src="js/pipeline2/interceptors.js?v=20260605-fastbar1"></script>
+<script src="js/pipeline2/engine.js?v=20260605-fastbar1"></script>
+<script src="js/pipeline2/init.js?v=20260605-fastbar1"></script>
 
 <script>
 'use strict';
@@ -1027,11 +1019,11 @@ function setAudioButtons(isPlaying) {
   const playBtn = document.getElementById('btn-play');
   const pauseBtn = document.getElementById('btn-pause');
   const np = document.getElementById('audio-np');
-  const sidebarBtn = document.getElementById('btn-sidebar-audio');
+  const mobileBtn = document.getElementById('mob-audio-btn');
   if (playBtn) playBtn.style.display = isPlaying ? 'none' : '';
   if (pauseBtn) pauseBtn.style.display = isPlaying ? '' : 'none';
   if (np && window._currentRef) np.textContent = '♪ ' + window._currentRef;
-  if (sidebarBtn) sidebarBtn.textContent = isPlaying ? 'Pause Audio' : 'Play Audio';
+  if (mobileBtn) mobileBtn.classList.toggle('active', !!isPlaying);
 }
 
 /* ══════════════════════════════════════════════
@@ -1099,16 +1091,32 @@ function audioMute() {
 /* ══════════════════════════════════════════════
    SIDEBAR MOBILE TOGGLE
 ══════════════════════════════════════════════ */
+function setSidebarOpen(isOpen) {
+  const sb = document.getElementById('sidebar');
+  if (!sb) return;
+  sb.classList.toggle('open', !!isOpen);
+  document.body.classList.toggle('controls-open', !!isOpen);
+  const btn = document.getElementById('mob-controls-btn');
+  if (btn) btn.classList.toggle('active', !!isOpen);
+  const closeRow = document.getElementById('sidebar-close-row');
+  if (closeRow) closeRow.style.display = isOpen ? 'flex' : 'none';
+}
+
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
   if (!sb) return;
-  const isOpen = sb.classList.toggle('open');
-  document.body.classList.toggle('controls-open', isOpen);
-  const btn = document.getElementById('mob-controls-btn');
-  if (btn) btn.classList.toggle('active', isOpen);
-  /* Show/hide the in-sidebar close row only when acting as a mobile overlay */
-  const closeRow = document.getElementById('sidebar-close-row');
-  if (closeRow) closeRow.style.display = isOpen ? 'flex' : 'none';
+  setSidebarOpen(!sb.classList.contains('open'));
+}
+
+function mobileAddAlarm() {
+  const sb = document.getElementById('sidebar');
+  if (sb && !sb.classList.contains('open')) {
+    setSidebarOpen(true);
+    const timeInput = document.getElementById('inp-pt');
+    if (timeInput) setTimeout(() => timeInput.focus(), 80);
+    return;
+  }
+  addAlarm();
 }
 
 /* ══════════════════════════════════════════════
@@ -1158,12 +1166,7 @@ function openKb() {
   /* Close sidebar first so it doesn't sit behind the keyboard sheet */
   const sb = document.getElementById('sidebar');
   if (sb && sb.classList.contains('open')) {
-    sb.classList.remove('open');
-    document.body.classList.remove('controls-open');
-    const btn = document.getElementById('mob-controls-btn');
-    if (btn) btn.classList.remove('active');
-    const closeRow = document.getElementById('sidebar-close-row');
-    if (closeRow) closeRow.style.display = 'none';
+    setSidebarOpen(false);
   }
   document.getElementById('kb-modal').classList.add('open');
   renderBooks();
