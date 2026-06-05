@@ -158,7 +158,15 @@ header {
 @media(max-width: 900px) {
   .app-shell { grid-template-columns: 1fr; }
   .sidebar { display: none !important; }
-  .sidebar.open { display: flex !important; position: fixed; inset: 0; z-index: 100; overflow-y: auto; }
+  .sidebar.open {
+    display: flex !important;
+    flex-direction: column !important;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    overflow: hidden; /* let inner div scroll, not the sidebar itself */
+    padding-bottom: 5rem; /* clear mobile bottom bar */
+  }
 }
 
 /* ══════════════════════════════
@@ -799,25 +807,32 @@ body.FOCUS-mode #focus-return { display: block; }
 
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-    <div>
-      <div class="panel-title">🙏 Prayer Alarms</div>
-      <div class="prayer-row">
-        <input type="time" id="inp-pt" aria-label="Prayer time" />
-        <input type="text" id="inp-pl" placeholder="Label" aria-label="Prayer label" style="flex:1.4;" />
+    <!-- Close button — only visible on mobile overlay -->
+    <div id="sidebar-close-row" style="display:none;justify-content:space-between;align-items:center;padding-bottom:.8rem;border-bottom:1px solid var(--border);margin-bottom:.5rem;">
+      <span style="font-family:var(--display);font-size:.8rem;color:var(--gold);letter-spacing:2px;">CONTROLS</span>
+      <button onclick="toggleSidebar()" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-size:1.2rem;width:2rem;height:2rem;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:1.5rem;min-height:0;">
+      <div>
+        <div class="panel-title">🙏 Prayer Alarms</div>
+        <div class="prayer-row">
+          <input type="time" id="inp-pt" aria-label="Prayer time" />
+          <input type="text" id="inp-pl" placeholder="Label" aria-label="Prayer label" style="flex:1.4;" />
+        </div>
+        <button class="side-btn primary" onclick="addAlarm()" style="margin-top:.4rem;">＋ Add Alarm</button>
+        <div class="alarm-list" id="alarm-list"></div>
+        <p class="alarm-hint">Voice reminder 2 min before · orange border at alarm time (3 min)</p>
       </div>
-      <button class="side-btn primary" onclick="addAlarm()" style="margin-top:.4rem;">＋ Add Alarm</button>
-      <div class="alarm-list" id="alarm-list"></div>
-      <p class="alarm-hint">Voice reminder 2 min before · orange border at alarm time (3 min)</p>
+
+      <div>
+        <div class="panel-title">📖 Scripture</div>
+        <button class="side-btn primary" onclick="openKb()">Open Bible Keyboard</button>
+      </div>
     </div>
 
-
-    <div>
-      <div class="panel-title">📖 Scripture</div>
-      <button class="side-btn primary" onclick="openKb()">Open Bible Keyboard</button>
-    </div>
-
-    <div style="margin-top:auto;">
-      <button class="side-btn" onclick="openSponsor()" style="opacity:.6;">About Our Sponsor</button>
+    <div style="padding-top:.8rem;border-top:1px solid var(--border);margin-top:.5rem;flex-shrink:0;">
+      <button class="side-btn" onclick="openSponsor()" style="opacity:.6;">About Our Organisation</button>
     </div>
   </aside>
 
@@ -1045,8 +1060,22 @@ function audioPause() {
   setAudioButtons(false);
 }
 function audioStop()  {
-  if (currentAudio) { try { currentAudio.pause(); } catch(e) {} currentAudio = null; }
-  updateVerseIcon(null, 'play');
+  /* Stop every possible audio handle — pipeline2 may hold its own reference */
+  if (typeof window.SC_stopAudio === 'function') window.SC_stopAudio();
+  if (typeof stopAudio === 'function') stopAudio();
+  try {
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      currentAudio.src = '';
+      currentAudio = null;
+    }
+  } catch(e) {}
+  /* Blast all Audio elements the browser is aware of */
+  document.querySelectorAll('audio').forEach(a => {
+    try { a.pause(); a.currentTime = 0; a.src = ''; } catch(e) {}
+  });
+  if (typeof updateVerseIcon === 'function') updateVerseIcon(null, 'play');
   setAudioButtons(false);
   const np = document.getElementById('audio-np');
   if (np) np.textContent = '—';
@@ -1073,6 +1102,9 @@ function toggleSidebar() {
   const isOpen = sb.classList.toggle('open');
   const btn = document.getElementById('mob-controls-btn');
   if (btn) btn.classList.toggle('active', isOpen);
+  /* Show/hide the in-sidebar close row only when acting as a mobile overlay */
+  const closeRow = document.getElementById('sidebar-close-row');
+  if (closeRow) closeRow.style.display = isOpen ? 'flex' : 'none';
 }
 
 /* ══════════════════════════════════════════════
@@ -1118,7 +1150,17 @@ const BOOK_NAMES = {
 
 let _kbBook = '', _kbCh = null, _kbVs = null, _numStr = '', _numType = '';
 
-function openKb() { document.getElementById('kb-modal').classList.add('open'); renderBooks(); }
+function openKb() {
+  /* Close sidebar first so it doesn't sit behind the keyboard sheet */
+  const sb = document.getElementById('sidebar');
+  if (sb && sb.classList.contains('open')) {
+    sb.classList.remove('open');
+    const btn = document.getElementById('mob-controls-btn');
+    if (btn) btn.classList.remove('active');
+  }
+  document.getElementById('kb-modal').classList.add('open');
+  renderBooks();
+}
 function closeKb() { document.getElementById('kb-modal').classList.remove('open'); }
 function handleKbOutside(e) { if (e.target.id === 'kb-modal') closeKb(); }
 
@@ -1280,18 +1322,7 @@ async function fetchAndDisplay(mode) {
     window._currentAudioRange = { book: bookName, bible_version: 'KJV', chapter_start: chStart, verse_start: vsStart, chapter_end: chEnd, verse_end: vsEnd };
     window._currentAudioVerses = verses;
     renderDisplayCard(ref, verses, mode);
-
-    if (verses.length && typeof playVoiceFromCdn === 'function') {
-      const range = {
-        book: bookName,
-        bible_version: 'KJV',
-        chapter_start: chStart,
-        verse_start: vsStart,
-        chapter_end: chEnd,
-        verse_end: vsEnd
-      };
-      playVoiceFromCdn(range, verses).catch(err => console.warn('Audio playback failed:', err));
-    }
+    /* Audio does NOT auto-play here — user taps ▶ or a verse icon explicitly */
   } catch (err) {
     refEl.textContent  = 'Error';
     bodyEl.textContent = 'Could not load scripture from local Bible data. (' + err.message + ')';
