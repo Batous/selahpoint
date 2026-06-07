@@ -899,13 +899,13 @@ body.FOCUS-mode #focus-return { display: block; }
 </div>
 
 <!-- Pipeline2 modules (audio engine) -->
-<script src="js/pipeline2/state.js?v=20260605-fastbar1"></script>
-<script src="js/pipeline2/utils.js?v=20260605-fastbar1"></script>
-<script src="js/pipeline2/maps.js?v=20260605-fastbar1"></script>
-<script src="js/pipeline2/alarms.js?v=20260605-fastbar1"></script>
-<script src="js/pipeline2/interceptors.js?v=20260605-fastbar1"></script>
-<script src="js/pipeline2/engine.js?v=20260605-fastbar1"></script>
-<script src="js/pipeline2/init.js?v=20260605-fastbar1"></script>
+<script src="js/pipeline2/state.js?v=20260607-kbnav1"></script>
+<script src="js/pipeline2/utils.js?v=20260607-kbnav1"></script>
+<script src="js/pipeline2/maps.js?v=20260607-kbnav1"></script>
+<script src="js/pipeline2/alarms.js?v=20260607-kbnav1"></script>
+<script src="js/pipeline2/interceptors.js?v=20260607-kbnav1"></script>
+<script src="js/pipeline2/engine.js?v=20260607-kbnav1"></script>
+<script src="js/pipeline2/init.js?v=20260607-kbnav1"></script>
 
 <script>
 'use strict';
@@ -1161,6 +1161,20 @@ const BOOK_NAMES = {
 };
 
 let _kbBook = '', _kbCh = null, _kbVs = null, _numStr = '', _numType = '';
+window.BOOKS = BOOKS;
+window.BOOK_NAMES = BOOK_NAMES;
+window.SELAH_KB = {
+  books: BOOKS,
+  bookNames: BOOK_NAMES,
+  setSelection({ bookId, chapter, verse }) {
+    _kbBook = bookId || '';
+    _kbCh = chapter || null;
+    _kbVs = verse || null;
+  },
+  getSelection() {
+    return { bookId: _kbBook, chapter: _kbCh, verse: _kbVs };
+  }
+};
 
 function openKb() {
   /* Close sidebar first so it doesn't sit behind the keyboard sheet */
@@ -1482,5 +1496,6 @@ function renderAlarms() {
 window.SC_getCurrentRef  = () => window._currentRef  || '';
 window.SC_getCurrentText = () => window._currentText || '';
 </script>
+<script src="js/pipeline2/kb-navigator.js?v=20260607-kbnav1"></script>
 </body>
 </html>
