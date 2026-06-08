@@ -8,7 +8,8 @@
     bookName: '',
     chapter: null,
     rangeStart: null,
-    verseCount: 0
+    verseCount: 0,
+    bookBrowseMode: localStorage.getItem('selah-kb-book-mode') || 'groups'
   };
 
   function bridge() {
@@ -24,6 +25,98 @@
 
   function bookNames() {
     return bridge().bookNames || window.BOOK_NAMES || {};
+  }
+
+  const BOOK_GROUPS = [
+    { key: 'law', label: 'Law', ids: ['GEN', 'EXO', 'LEV', 'NUM', 'DEU'] },
+    { key: 'history', label: 'History', ids: ['JOS', 'JDG', 'RUT', '1SA', '2SA', '1KI', '2KI', '1CH', '2CH', 'EZR', 'NEH', 'EST'] },
+    { key: 'wisdom', label: 'Wisdom', ids: ['JOB', 'PSA', 'PRO', 'ECC', 'SNG'] },
+    { key: 'major', label: 'Major Prophets', ids: ['ISA', 'JER', 'LAM', 'EZK', 'DAN'] },
+    { key: 'minor', label: 'Minor Prophets', ids: ['HOS', 'JOL', 'AMO', 'OBA', 'JON', 'MIC', 'NAM', 'HAB', 'ZEP', 'HAG', 'ZEC', 'MAL'] },
+    { key: 'gospel', label: 'Gospels & Acts', ids: ['MAT', 'MRK', 'LUK', 'JHN', 'ACT'] },
+    { key: 'paul', label: 'Paul', ids: ['ROM', '1CO', '2CO', 'GAL', 'EPH', 'PHP', 'COL', '1TH', '2TH', '1TI', '2TI', 'TIT', 'PHM'] },
+    { key: 'general', label: 'Letters & Rev', ids: ['HEB', 'JAS', '1PE', '2PE', '1JN', '2JN', '3JN', 'JUD', 'REV'] }
+  ];
+
+  const GROUP_BY_ID = BOOK_GROUPS.reduce((map, group) => {
+    group.ids.forEach(id => { map[id] = group; });
+    return map;
+  }, {});
+
+  function injectBookBrowseStyles() {
+    if (document.getElementById('kb-book-browse-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'kb-book-browse-styles';
+    style.textContent = `
+      .kb-book-tools { grid-column: 1 / -1; display: flex; gap: .45rem; align-items: center; margin-bottom: .25rem; }
+      .kb-book-tool { border: 1px solid rgba(201,168,76,.42); background: rgba(0,0,0,.22); color: var(--text); border-radius: 4px; padding: .45rem .7rem; font: 700 .68rem var(--mono); cursor: pointer; }
+      .kb-book-tool.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+      .kb-book-section { grid-column: 1 / -1; display: flex; align-items: center; gap: .45rem; margin-top: .35rem; color: var(--gold); font: 700 .68rem var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+      .kb-book-section::after { content: ''; height: 1px; flex: 1; background: rgba(201,168,76,.22); }
+      .kb-book-letter { grid-column: 1 / -1; margin-top: .35rem; padding-top: .25rem; border-top: 1px solid rgba(201,168,76,.2); color: var(--muted); font: 700 .68rem var(--mono); }
+      .kb-book-full { display: block; margin-top: .15rem; font: 600 .56rem var(--mono); opacity: .78; }
+      .kb-book-law { background: rgba(192,125,34,.24); border-color: rgba(229,172,73,.72); }
+      .kb-book-history { background: rgba(39,130,112,.24); border-color: rgba(79,190,165,.68); }
+      .kb-book-wisdom { background: rgba(107,78,169,.24); border-color: rgba(158,128,231,.68); }
+      .kb-book-major { background: rgba(169,68,73,.24); border-color: rgba(223,105,113,.68); }
+      .kb-book-minor { background: rgba(180,98,39,.24); border-color: rgba(230,142,71,.68); }
+      .kb-book-gospel { background: rgba(56,101,181,.24); border-color: rgba(105,154,238,.68); }
+      .kb-book-paul { background: rgba(72,135,62,.24); border-color: rgba(127,205,111,.68); }
+      .kb-book-general { background: rgba(157,132,48,.24); border-color: rgba(221,193,88,.72); }
+      .kb-book-unknown { background: rgba(0,0,0,.3); }
+      @media(max-width: 520px) { .kb-book-tools { position: sticky; top: 0; z-index: 2; background: var(--surface2); padding-bottom: .25rem; } .kb-book-full { display: none; } }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function getBookMeta(book) {
+    const names = bookNames();
+    const group = GROUP_BY_ID[book.id] || { key: 'unknown', label: 'Other' };
+    return {
+      id: book.id,
+      shortName: book.n,
+      fullName: names[book.id] || book.id,
+      group
+    };
+  }
+
+  function renderBookTools(grid) {
+    const tools = document.createElement('div');
+    tools.className = 'kb-book-tools';
+    [
+      { mode: 'groups', label: 'Groups' },
+      { mode: 'alpha', label: 'A-Z' }
+    ].forEach(item => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'kb-book-tool' + (state.bookBrowseMode === item.mode ? ' active' : '');
+      button.textContent = item.label;
+      button.onclick = () => {
+        state.bookBrowseMode = item.mode;
+        localStorage.setItem('selah-kb-book-mode', item.mode);
+        renderBooks();
+      };
+      tools.appendChild(button);
+    });
+    grid.appendChild(tools);
+  }
+
+  function renderBookDivider(grid, label, className) {
+    const divider = document.createElement('div');
+    divider.className = className;
+    divider.textContent = label;
+    grid.appendChild(divider);
+  }
+
+  function renderBookButton(book) {
+    const btn = gridButton(book.shortName, () => selectBook(book.id), 'kb-book-' + book.group.key);
+    if (!btn) return;
+    btn.title = book.fullName + ' - ' + book.group.label;
+    btn.setAttribute('aria-label', book.fullName);
+    const full = document.createElement('span');
+    full.className = 'kb-book-full';
+    full.textContent = book.fullName;
+    btn.appendChild(full);
   }
 
   function setLegacySelection(bookId, chapter, verse) {
@@ -183,11 +276,29 @@
   function renderBooks() {
     state.step = 'BOOK';
     clearGrid();
-    setCrumbs('Select a book');
-    books().forEach(book => {
-      const name = bookNames()[book.id] || book.id;
-      const btn = gridButton(book.n, () => selectBook(book.id));
-      if (btn) btn.title = name;
+    injectBookBrowseStyles();
+    setCrumbs(state.bookBrowseMode === 'alpha' ? 'Select a book A-Z' : 'Select a book by group');
+    const grid = document.getElementById('kb-grid');
+    if (!grid) return;
+    const bookList = books().map(getBookMeta);
+    renderBookTools(grid);
+
+    if (state.bookBrowseMode === 'alpha') {
+      let currentLetter = '';
+      [...bookList].sort((a, b) => a.fullName.localeCompare(b.fullName)).forEach(book => {
+        const letter = book.fullName.charAt(0).toUpperCase();
+        if (letter !== currentLetter) {
+          currentLetter = letter;
+          renderBookDivider(grid, letter, 'kb-book-letter');
+        }
+        renderBookButton(book);
+      });
+      return;
+    }
+
+    BOOK_GROUPS.forEach(group => {
+      renderBookDivider(grid, group.label, 'kb-book-section');
+      bookList.filter(book => book.group.key === group.key).forEach(renderBookButton);
     });
   }
 
