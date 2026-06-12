@@ -841,10 +841,10 @@ body.FOCUS-mode #focus-return { display: block; }
   <!-- CONTENT -->
   <main class="content-area" id="content">
 
-    <!-- VERSE OF THE DAY -->
+    <!-- VERSET DU JOUR -->
     <div id="votd-card">
-      <div class="votd-label">✦ Verse of the Day</div>
-      <div id="votd-text">Loading<span id="loading-dot"></span></div>
+      <div class="votd-label">✦ Verset du jour</div>
+      <div id="votd-text">Chargement<span id="loading-dot"></span></div>
       <div id="votd-ref"></div>
       <div id="audio-bar">
         <span id="audio-np">—</span>
@@ -905,13 +905,13 @@ body.FOCUS-mode #focus-return { display: block; }
 </div>
 
 <!-- Pipeline2 modules (audio engine) -->
-<script src="js/pipeline2/state.js?v=20260612-lsg3"></script>
-<script src="js/pipeline2/utils.js?v=20260612-lsg3"></script>
-<script src="js/pipeline2/maps.js?v=20260612-lsg3"></script>
-<script src="js/pipeline2/alarms.js?v=20260612-lsg3"></script>
-<script src="js/pipeline2/interceptors.js?v=20260612-lsg3"></script>
-<script src="js/pipeline2/engine.js?v=20260612-lsg3"></script>
-<script src="js/pipeline2/init.js?v=20260612-lsg3"></script>
+<script src="js/pipeline2/state.js?v=20260612-lsg4"></script>
+<script src="js/pipeline2/utils.js?v=20260612-lsg4"></script>
+<script src="js/pipeline2/maps.js?v=20260612-lsg4"></script>
+<script src="js/pipeline2/alarms.js?v=20260612-lsg4"></script>
+<script src="js/pipeline2/interceptors.js?v=20260612-lsg4"></script>
+<script src="js/pipeline2/engine.js?v=20260612-lsg4"></script>
+<script src="js/pipeline2/init.js?v=20260612-lsg4"></script>
 
 <script>
 'use strict';
@@ -967,51 +967,92 @@ function closeSponsor() { document.getElementById('sponsor-modal').classList.rem
 function handleSpOutside(e) { if (e.target.id === 'sponsor-modal') closeSponsor(); }
 
 /* ══════════════════════════════════════════════
-   VERSE OF THE DAY
-   Curated list — themes: love, forgiveness, redemption, hope, light
+   VERSET DU JOUR
+   References quotidiennes chargees depuis la Bible LSG locale
 ══════════════════════════════════════════════ */
-const VOTD_LIST = [
-  { ref: 'John 3:16',           text: 'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.' },
-  { ref: 'Romans 8:28',         text: 'And we know that all things work together for good to them that love God, to them who are the called according to his purpose.' },
-  { ref: '1 Corinthians 13:4',  text: 'Charity suffereth long, and is kind; charity envieth not; charity vaunteth not itself, is not puffed up.' },
-  { ref: 'Psalm 23:1',          text: 'The Lord is my shepherd; I shall not want.' },
-  { ref: 'Isaiah 40:31',        text: 'But they that wait upon the Lord shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary; and they shall walk, and not faint.' },
-  { ref: 'Jeremiah 29:11',      text: 'For I know the thoughts that I think toward you, saith the Lord, thoughts of peace, and not of evil, to give you an expected end.' },
-  { ref: 'Philippians 4:13',    text: 'I can do all things through Christ which strengtheneth me.' },
-  { ref: 'Proverbs 3:5-6',      text: 'Trust in the Lord with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.' },
-  { ref: 'Romans 5:8',          text: 'But God commendeth his love toward us, in that, while we were yet sinners, Christ died for us.' },
-  { ref: 'Ephesians 2:8',       text: 'For by grace are ye saved through faith; and that not of yourselves: it is the gift of God.' },
-  { ref: 'Psalm 46:1',          text: 'God is our refuge and strength, a very present help in trouble.' },
-  { ref: 'Matthew 5:14',        text: 'Ye are the light of the world. A city that is set on an hill cannot be hid.' },
-  { ref: 'John 8:12',           text: 'Then spake Jesus again unto them, saying, I am the light of the world: he that followeth me shall not walk in darkness, but shall have the light of life.' },
-  { ref: '1 John 4:19',         text: 'We love him, because he first loved us.' },
-  { ref: 'Micah 6:8',           text: 'He hath shewed thee, O man, what is good; and what doth the Lord require of thee, but to do justly, and to love mercy, and to walk humbly with thy God?' },
-  { ref: 'Matthew 6:33',        text: 'But seek ye first the kingdom of God, and his righteousness; and all these things shall be added unto you.' },
-  { ref: 'Isaiah 41:10',        text: 'Fear thou not; for I am with thee: be not dismayed; for I am thy God: I will strengthen thee; yea, I will help thee.' },
-  { ref: 'Lamentations 3:22-23',text: 'It is of the Lord\'s mercies that we are not consumed, because his compassions fail not. They are new every morning: great is thy faithfulness.' },
-  { ref: 'Romans 12:2',         text: 'And be not conformed to this world: but be ye transformed by the renewing of your mind.' },
-  { ref: '2 Corinthians 5:17',  text: 'Therefore if any man be in Christ, he is a new creature: old things are passed away; behold, all things are become new.' },
-  { ref: 'Psalm 119:105',       text: 'Thy word is a lamp unto my feet, and a light unto my path.' },
-  { ref: 'John 14:6',           text: 'Jesus saith unto him, I am the way, the truth, and the life: no man cometh unto the Father, but by me.' },
-  { ref: 'Colossians 3:13',     text: 'Forbearing one another, and forgiving one another, if any man have a quarrel against any: even as Christ forgave you, so also do ye.' },
-  { ref: 'Hebrews 11:1',        text: 'Now faith is the substance of things hoped for, the evidence of things not seen.' },
-  { ref: 'James 1:17',          text: 'Every good gift and every perfect gift is from above, and cometh down from the Father of lights, with whom is no variableness, neither shadow of turning.' },
-  { ref: '1 Peter 5:7',         text: 'Casting all your care upon him; for he careth for you.' },
-  { ref: 'Psalm 27:1',          text: 'The Lord is my light and my salvation; whom shall I fear? the Lord is the strength of my life; of whom shall I be afraid?' },
-  { ref: 'Galatians 5:22-23',   text: 'But the fruit of the Spirit is love, joy, peace, longsuffering, gentleness, goodness, faith, meekness, temperance: against such there is no law.' },
-  { ref: 'Matthew 22:37-39',    text: 'Jesus said unto him, Thou shalt love the Lord thy God with all thy heart, and with all thy soul, and with all thy mind. This is the first and great commandment. And the second is like unto it, Thou shalt love thy neighbour as thyself.' },
-  { ref: 'Revelation 21:4',     text: 'And God shall wipe away all tears from their eyes; and there shall be no more death, neither sorrow, nor crying, neither shall there be any more pain: for the former things are passed away.' },
+const VOTD_REFS = [
+  { book: 43, chapter: 3, verse: 16 },
+  { book: 45, chapter: 8, verse: 28 },
+  { book: 46, chapter: 13, verse: 4 },
+  { book: 19, chapter: 23, verse: 1 },
+  { book: 23, chapter: 40, verse: 31 },
+  { book: 24, chapter: 29, verse: 11 },
+  { book: 50, chapter: 4, verse: 13 },
+  { book: 20, chapter: 3, verse: 5, verseEnd: 6 },
+  { book: 45, chapter: 5, verse: 8 },
+  { book: 49, chapter: 2, verse: 8 },
+  { book: 19, chapter: 46, verse: 1 },
+  { book: 40, chapter: 5, verse: 14 },
+  { book: 43, chapter: 8, verse: 12 },
+  { book: 62, chapter: 4, verse: 19 },
+  { book: 33, chapter: 6, verse: 8 },
+  { book: 40, chapter: 6, verse: 33 },
+  { book: 23, chapter: 41, verse: 10 },
+  { book: 25, chapter: 3, verse: 22, verseEnd: 23 },
+  { book: 45, chapter: 12, verse: 2 },
+  { book: 47, chapter: 5, verse: 17 },
+  { book: 19, chapter: 119, verse: 105 },
+  { book: 43, chapter: 14, verse: 6 },
+  { book: 51, chapter: 3, verse: 13 },
+  { book: 58, chapter: 11, verse: 1 },
+  { book: 59, chapter: 1, verse: 17 },
+  { book: 60, chapter: 5, verse: 7 },
+  { book: 19, chapter: 27, verse: 1 },
+  { book: 48, chapter: 5, verse: 22, verseEnd: 23 },
+  { book: 40, chapter: 22, verse: 37, verseEnd: 39 },
+  { book: 66, chapter: 21, verse: 4 },
 ];
 
-function loadVOTD() {
-  const day   = new Date().getDate() + new Date().getMonth() * 31;
-  const verse = VOTD_LIST[day % VOTD_LIST.length];
-  const dot   = document.getElementById('loading-dot');
+async function loadVOTD() {
+  const textEl = document.getElementById('votd-text');
+  const refEl = document.getElementById('votd-ref');
+  const dot = document.getElementById('loading-dot');
   if (dot) dot.remove();
-  document.getElementById('votd-text').textContent = verse.text;
-  document.getElementById('votd-ref').textContent  = verse.ref;
-  window._currentRef  = verse.ref;
-  window._currentText = verse.text;
+  if (!textEl || !refEl) return;
+
+  try {
+    const day = new Date().getDate() + new Date().getMonth() * 31;
+    const pick = VOTD_REFS[day % VOTD_REFS.length];
+    const verseEnd = pick.verseEnd || pick.verse;
+    const bibleData = await getOfflineBibleData('/data/bibles/lsg.json');
+    const bookData = Array.isArray(bibleData) ? bibleData[pick.book - 1] : null;
+    const chapterData = bookData && Array.isArray(bookData.chapters) ? bookData.chapters[pick.chapter - 1] : null;
+    const sourceVerses = chapterData && Array.isArray(chapterData.verses) ? chapterData.verses : [];
+    const verses = sourceVerses
+      .filter(v => Number(v.verse) >= pick.verse && Number(v.verse) <= verseEnd)
+      .map(v => ({ book: bookData.name, chapter: pick.chapter, verse: Number(v.verse), text: v.text }));
+
+    if (!bookData || !verses.length) throw new Error('LSG verse not found: book ' + pick.book + ' ' + pick.chapter + ':' + pick.verse);
+
+    const bookName = bookData.name;
+    const verseText = verses.map(v => v.text).join(' ');
+    const ref = verseEnd !== pick.verse
+      ? bookName + ' ' + pick.chapter + ':' + pick.verse + '-' + verseEnd
+      : bookName + ' ' + pick.chapter + ':' + pick.verse;
+
+    textEl.textContent = verseText;
+    refEl.textContent = ref;
+    window._currentRef = ref;
+    window._currentText = verseText;
+    window._currentAudioVerses = verses;
+    window._currentAudioRange = {
+      book: bookName,
+      bible_version: 'LSG',
+      chapter_start: pick.chapter,
+      verse_start: pick.verse,
+      chapter_end: pick.chapter,
+      verse_end: verseEnd
+    };
+    const np = document.getElementById('audio-np');
+    if (np) np.textContent = '\u266A ' + ref;
+  } catch (err) {
+    console.warn('[SelahPoint] Verset du jour indisponible:', err);
+    textEl.textContent = 'Ta parole est une lampe \u00E0 mes pieds, Et une lumi\u00E8re sur mon sentier.';
+    refEl.textContent = 'Psaumes 119:105';
+    window._currentRef = 'Psaumes 119:105';
+    window._currentText = textEl.textContent;
+    window._currentAudioRange = { book: 'Psaumes', bible_version: 'LSG', chapter_start: 119, verse_start: 105, chapter_end: 119, verse_end: 105 };
+  }
 }
 loadVOTD();
 
@@ -1479,6 +1520,6 @@ function renderAlarms() {
 window.SC_getCurrentRef  = () => window._currentRef  || '';
 window.SC_getCurrentText = () => window._currentText || '';
 </script>
-<script src="js/pipeline2/kb-navigator.js?v=20260612-lsg3"></script>
+<script src="js/pipeline2/kb-navigator.js?v=20260612-lsg4"></script>
 </body>
 </html>
