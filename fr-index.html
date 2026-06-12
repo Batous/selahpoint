@@ -905,13 +905,13 @@ body.FOCUS-mode #focus-return { display: block; }
 </div>
 
 <!-- Pipeline2 modules (audio engine) -->
-<script src="js/pipeline2/state.js?v=20260612-lsg4"></script>
-<script src="js/pipeline2/utils.js?v=20260612-lsg4"></script>
-<script src="js/pipeline2/maps.js?v=20260612-lsg4"></script>
-<script src="js/pipeline2/alarms.js?v=20260612-lsg4"></script>
-<script src="js/pipeline2/interceptors.js?v=20260612-lsg4"></script>
-<script src="js/pipeline2/engine.js?v=20260612-lsg4"></script>
-<script src="js/pipeline2/init.js?v=20260612-lsg4"></script>
+<script src="js/pipeline2/state.js?v=20260612-lsg5"></script>
+<script src="js/pipeline2/utils.js?v=20260612-lsg5"></script>
+<script src="js/pipeline2/maps.js?v=20260612-lsg5"></script>
+<script src="js/pipeline2/alarms.js?v=20260612-lsg5"></script>
+<script src="js/pipeline2/interceptors.js?v=20260612-lsg5"></script>
+<script src="js/pipeline2/engine.js?v=20260612-lsg5"></script>
+<script src="js/pipeline2/init.js?v=20260612-lsg5"></script>
 
 <script>
 'use strict';
@@ -970,89 +970,542 @@ function handleSpOutside(e) { if (e.target.id === 'sponsor-modal') closeSponsor(
    VERSET DU JOUR
    References quotidiennes chargees depuis la Bible LSG locale
 ══════════════════════════════════════════════ */
-const VOTD_REFS = [
-  { book: 43, chapter: 3, verse: 16 },
-  { book: 45, chapter: 8, verse: 28 },
-  { book: 46, chapter: 13, verse: 4 },
-  { book: 19, chapter: 23, verse: 1 },
-  { book: 23, chapter: 40, verse: 31 },
-  { book: 24, chapter: 29, verse: 11 },
-  { book: 50, chapter: 4, verse: 13 },
-  { book: 20, chapter: 3, verse: 5, verseEnd: 6 },
-  { book: 45, chapter: 5, verse: 8 },
-  { book: 49, chapter: 2, verse: 8 },
-  { book: 19, chapter: 46, verse: 1 },
-  { book: 40, chapter: 5, verse: 14 },
-  { book: 43, chapter: 8, verse: 12 },
-  { book: 62, chapter: 4, verse: 19 },
-  { book: 33, chapter: 6, verse: 8 },
-  { book: 40, chapter: 6, verse: 33 },
-  { book: 23, chapter: 41, verse: 10 },
-  { book: 25, chapter: 3, verse: 22, verseEnd: 23 },
-  { book: 45, chapter: 12, verse: 2 },
-  { book: 47, chapter: 5, verse: 17 },
-  { book: 19, chapter: 119, verse: 105 },
-  { book: 43, chapter: 14, verse: 6 },
-  { book: 51, chapter: 3, verse: 13 },
-  { book: 58, chapter: 11, verse: 1 },
-  { book: 59, chapter: 1, verse: 17 },
-  { book: 60, chapter: 5, verse: 7 },
-  { book: 19, chapter: 27, verse: 1 },
-  { book: 48, chapter: 5, verse: 22, verseEnd: 23 },
-  { book: 40, chapter: 22, verse: 37, verseEnd: 39 },
-  { book: 66, chapter: 21, verse: 4 },
+const VOTD_LIST = [
+  {
+    "ref": "Jean 3:16",
+    "text": "Car Dieu a tant aimé le monde qu'il a donné son Fils unique, afin que quiconque croit en lui ne périsse point, mais qu'il ait la vie éternelle.",
+    "book": "Jean",
+    "chapter": 3,
+    "verse": 16,
+    "verseEnd": 16,
+    "verses": [
+      {
+        "book": "Jean",
+        "chapter": 3,
+        "verse": 16,
+        "text": "Car Dieu a tant aimé le monde qu'il a donné son Fils unique, afin que quiconque croit en lui ne périsse point, mais qu'il ait la vie éternelle."
+      }
+    ]
+  },
+  {
+    "ref": "Romains 8:28",
+    "text": "Nous savons, du reste, que toutes choses concourent au bien de ceux qui aiment Dieu, de ceux qui sont appelés selon son dessein.",
+    "book": "Romains",
+    "chapter": 8,
+    "verse": 28,
+    "verseEnd": 28,
+    "verses": [
+      {
+        "book": "Romains",
+        "chapter": 8,
+        "verse": 28,
+        "text": "Nous savons, du reste, que toutes choses concourent au bien de ceux qui aiment Dieu, de ceux qui sont appelés selon son dessein."
+      }
+    ]
+  },
+  {
+    "ref": "1 Corinthiens 13:4",
+    "text": "La charité est patiente, elle est pleine de bonté; la charité n'est point envieuse; la charité ne se vante point, elle ne s'enfle point d'orgueil,",
+    "book": "1 Corinthiens",
+    "chapter": 13,
+    "verse": 4,
+    "verseEnd": 4,
+    "verses": [
+      {
+        "book": "1 Corinthiens",
+        "chapter": 13,
+        "verse": 4,
+        "text": "La charité est patiente, elle est pleine de bonté; la charité n'est point envieuse; la charité ne se vante point, elle ne s'enfle point d'orgueil,"
+      }
+    ]
+  },
+  {
+    "ref": "Psaume 23:1",
+    "text": "Cantique de David. L'Eternel est mon berger: je ne manquerai de rien.",
+    "book": "Psaume",
+    "chapter": 23,
+    "verse": 1,
+    "verseEnd": 1,
+    "verses": [
+      {
+        "book": "Psaume",
+        "chapter": 23,
+        "verse": 1,
+        "text": "Cantique de David. L'Eternel est mon berger: je ne manquerai de rien."
+      }
+    ]
+  },
+  {
+    "ref": "Ésaïe 40:31",
+    "text": "Mais ceux qui se confient en l'Eternel renouvellent leur force. Ils prennent le vol comme les aigles; Ils courent, et ne se lassent point, Ils marchent, et ne se fatiguent point.",
+    "book": "Ésaïe",
+    "chapter": 40,
+    "verse": 31,
+    "verseEnd": 31,
+    "verses": [
+      {
+        "book": "Ésaïe",
+        "chapter": 40,
+        "verse": 31,
+        "text": "Mais ceux qui se confient en l'Eternel renouvellent leur force. Ils prennent le vol comme les aigles; Ils courent, et ne se lassent point, Ils marchent, et ne se fatiguent point."
+      }
+    ]
+  },
+  {
+    "ref": "Jérémie 29:11",
+    "text": "Car je connais les projets que j'ai formés sur vous, dit l'Eternel, projets de paix et non de malheur, afin de vous donner un avenir et de l'espérance.",
+    "book": "Jérémie",
+    "chapter": 29,
+    "verse": 11,
+    "verseEnd": 11,
+    "verses": [
+      {
+        "book": "Jérémie",
+        "chapter": 29,
+        "verse": 11,
+        "text": "Car je connais les projets que j'ai formés sur vous, dit l'Eternel, projets de paix et non de malheur, afin de vous donner un avenir et de l'espérance."
+      }
+    ]
+  },
+  {
+    "ref": "Philippiens 4:13",
+    "text": "Je puis tout par celui qui me fortifie.",
+    "book": "Philippiens",
+    "chapter": 4,
+    "verse": 13,
+    "verseEnd": 13,
+    "verses": [
+      {
+        "book": "Philippiens",
+        "chapter": 4,
+        "verse": 13,
+        "text": "Je puis tout par celui qui me fortifie."
+      }
+    ]
+  },
+  {
+    "ref": "Proverbes 3:5-6",
+    "text": "Confie-toi en l'Eternel de tout ton coeur, Et ne t'appuie pas sur ta sagesse; Reconnais-le dans toutes tes voies, Et il aplanira tes sentiers.",
+    "book": "Proverbes",
+    "chapter": 3,
+    "verse": 5,
+    "verseEnd": 6,
+    "verses": [
+      {
+        "book": "Proverbes",
+        "chapter": 3,
+        "verse": 5,
+        "text": "Confie-toi en l'Eternel de tout ton coeur, Et ne t'appuie pas sur ta sagesse;"
+      },
+      {
+        "book": "Proverbes",
+        "chapter": 3,
+        "verse": 6,
+        "text": "Reconnais-le dans toutes tes voies, Et il aplanira tes sentiers."
+      }
+    ]
+  },
+  {
+    "ref": "Romains 5:8",
+    "text": "Mais Dieu prouve son amour envers nous, en ce que, lorsque nous étions encore des pécheurs, Christ est mort pour nous.",
+    "book": "Romains",
+    "chapter": 5,
+    "verse": 8,
+    "verseEnd": 8,
+    "verses": [
+      {
+        "book": "Romains",
+        "chapter": 5,
+        "verse": 8,
+        "text": "Mais Dieu prouve son amour envers nous, en ce que, lorsque nous étions encore des pécheurs, Christ est mort pour nous."
+      }
+    ]
+  },
+  {
+    "ref": "Éphésiens 2:8",
+    "text": "Car c'est par la grâce que vous êtes sauvés, par le moyen de la foi. Et cela ne vient pas de vous, c'est le don de Dieu.",
+    "book": "Éphésiens",
+    "chapter": 2,
+    "verse": 8,
+    "verseEnd": 8,
+    "verses": [
+      {
+        "book": "Éphésiens",
+        "chapter": 2,
+        "verse": 8,
+        "text": "Car c'est par la grâce que vous êtes sauvés, par le moyen de la foi. Et cela ne vient pas de vous, c'est le don de Dieu."
+      }
+    ]
+  },
+  {
+    "ref": "Psaume 46:1",
+    "text": "Au chef des chantres. Des fils de Koré. Sur alamoth. Cantique. Dieu est pour nous un refuge et un appui, Un secours qui ne manque jamais dans la détresse.",
+    "book": "Psaume",
+    "chapter": 46,
+    "verse": 1,
+    "verseEnd": 1,
+    "verses": [
+      {
+        "book": "Psaume",
+        "chapter": 46,
+        "verse": 1,
+        "text": "Au chef des chantres. Des fils de Koré. Sur alamoth. Cantique. Dieu est pour nous un refuge et un appui, Un secours qui ne manque jamais dans la détresse."
+      }
+    ]
+  },
+  {
+    "ref": "Matthieu 5:14",
+    "text": "Vous êtes la lumière du monde. Une ville située sur une montagne ne peut être cachée;",
+    "book": "Matthieu",
+    "chapter": 5,
+    "verse": 14,
+    "verseEnd": 14,
+    "verses": [
+      {
+        "book": "Matthieu",
+        "chapter": 5,
+        "verse": 14,
+        "text": "Vous êtes la lumière du monde. Une ville située sur une montagne ne peut être cachée;"
+      }
+    ]
+  },
+  {
+    "ref": "Jean 8:12",
+    "text": "Jésus leur parla de nouveau, et dit: Je suis la lumière du monde; celui qui me suit ne marchera pas dans les ténèbres, mais il aura la lumière de la vie.",
+    "book": "Jean",
+    "chapter": 8,
+    "verse": 12,
+    "verseEnd": 12,
+    "verses": [
+      {
+        "book": "Jean",
+        "chapter": 8,
+        "verse": 12,
+        "text": "Jésus leur parla de nouveau, et dit: Je suis la lumière du monde; celui qui me suit ne marchera pas dans les ténèbres, mais il aura la lumière de la vie."
+      }
+    ]
+  },
+  {
+    "ref": "1 Jean 4:19",
+    "text": "Pour nous, nous l'aimons, parce qu'il nous a aimés le premier.",
+    "book": "1 Jean",
+    "chapter": 4,
+    "verse": 19,
+    "verseEnd": 19,
+    "verses": [
+      {
+        "book": "1 Jean",
+        "chapter": 4,
+        "verse": 19,
+        "text": "Pour nous, nous l'aimons, parce qu'il nous a aimés le premier."
+      }
+    ]
+  },
+  {
+    "ref": "Michée 6:8",
+    "text": "On t'a fait connaître, ô homme, ce qui est bien; Et ce que l'Eternel demande de toi, C'est que tu pratiques la justice, Que tu aimes la miséricorde, Et que tu marches humblement avec ton Dieu.",
+    "book": "Michée",
+    "chapter": 6,
+    "verse": 8,
+    "verseEnd": 8,
+    "verses": [
+      {
+        "book": "Michée",
+        "chapter": 6,
+        "verse": 8,
+        "text": "On t'a fait connaître, ô homme, ce qui est bien; Et ce que l'Eternel demande de toi, C'est que tu pratiques la justice, Que tu aimes la miséricorde, Et que tu marches humblement avec ton Dieu."
+      }
+    ]
+  },
+  {
+    "ref": "Matthieu 6:33",
+    "text": "Cherchez premièrement le royaume et la justice de Dieu; et toutes ces choses vous seront données par-dessus.",
+    "book": "Matthieu",
+    "chapter": 6,
+    "verse": 33,
+    "verseEnd": 33,
+    "verses": [
+      {
+        "book": "Matthieu",
+        "chapter": 6,
+        "verse": 33,
+        "text": "Cherchez premièrement le royaume et la justice de Dieu; et toutes ces choses vous seront données par-dessus."
+      }
+    ]
+  },
+  {
+    "ref": "Ésaïe 41:10",
+    "text": "Ne crains rien, car je suis avec toi; Ne promène pas des regards inquiets, car je suis ton Dieu; Je te fortifie, je viens à ton secours, Je te soutiens de ma droite triomphante.",
+    "book": "Ésaïe",
+    "chapter": 41,
+    "verse": 10,
+    "verseEnd": 10,
+    "verses": [
+      {
+        "book": "Ésaïe",
+        "chapter": 41,
+        "verse": 10,
+        "text": "Ne crains rien, car je suis avec toi; Ne promène pas des regards inquiets, car je suis ton Dieu; Je te fortifie, je viens à ton secours, Je te soutiens de ma droite triomphante."
+      }
+    ]
+  },
+  {
+    "ref": "Lamentations 3:22-23",
+    "text": "Les bontés de l'Eternel ne sont pas épuisées, Ses compassions ne sont pas à leur terme; Elles se renouvellent chaque matin. Oh! que ta fidélité est grande!",
+    "book": "Lamentations",
+    "chapter": 3,
+    "verse": 22,
+    "verseEnd": 23,
+    "verses": [
+      {
+        "book": "Lamentations",
+        "chapter": 3,
+        "verse": 22,
+        "text": "Les bontés de l'Eternel ne sont pas épuisées, Ses compassions ne sont pas à leur terme;"
+      },
+      {
+        "book": "Lamentations",
+        "chapter": 3,
+        "verse": 23,
+        "text": "Elles se renouvellent chaque matin. Oh! que ta fidélité est grande!"
+      }
+    ]
+  },
+  {
+    "ref": "Romains 12:2",
+    "text": "Ne vous conformez pas au siècle présent, mais soyez transformés par le renouvellement de l'intelligence, afin que vous discerniez quelle est la volonté de Dieu, ce qui est bon, agréable et parfait.",
+    "book": "Romains",
+    "chapter": 12,
+    "verse": 2,
+    "verseEnd": 2,
+    "verses": [
+      {
+        "book": "Romains",
+        "chapter": 12,
+        "verse": 2,
+        "text": "Ne vous conformez pas au siècle présent, mais soyez transformés par le renouvellement de l'intelligence, afin que vous discerniez quelle est la volonté de Dieu, ce qui est bon, agréable et parfait."
+      }
+    ]
+  },
+  {
+    "ref": "2 Corinthiens 5:17",
+    "text": "Si quelqu'un est en Christ, il est une nouvelle créature. Les choses anciennes sont passées; voici, toutes choses sont devenues nouvelles.",
+    "book": "2 Corinthiens",
+    "chapter": 5,
+    "verse": 17,
+    "verseEnd": 17,
+    "verses": [
+      {
+        "book": "2 Corinthiens",
+        "chapter": 5,
+        "verse": 17,
+        "text": "Si quelqu'un est en Christ, il est une nouvelle créature. Les choses anciennes sont passées; voici, toutes choses sont devenues nouvelles."
+      }
+    ]
+  },
+  {
+    "ref": "Psaume 119:105",
+    "text": "Ta parole est une lampe à mes pieds, Et une lumière sur mon sentier.",
+    "book": "Psaume",
+    "chapter": 119,
+    "verse": 105,
+    "verseEnd": 105,
+    "verses": [
+      {
+        "book": "Psaume",
+        "chapter": 119,
+        "verse": 105,
+        "text": "Ta parole est une lampe à mes pieds, Et une lumière sur mon sentier."
+      }
+    ]
+  },
+  {
+    "ref": "Jean 14:6",
+    "text": "Jésus lui dit: Je suis le chemin, la vérité, et la vie. Nul ne vient au Père que par moi.",
+    "book": "Jean",
+    "chapter": 14,
+    "verse": 6,
+    "verseEnd": 6,
+    "verses": [
+      {
+        "book": "Jean",
+        "chapter": 14,
+        "verse": 6,
+        "text": "Jésus lui dit: Je suis le chemin, la vérité, et la vie. Nul ne vient au Père que par moi."
+      }
+    ]
+  },
+  {
+    "ref": "Colossiens 3:13",
+    "text": "Supportez-vous les uns les autres, et, si l'un a sujet de se plaindre de l'autre, pardonnez-vous réciproquement. De même que Christ vous a pardonné, pardonnez-vous aussi.",
+    "book": "Colossiens",
+    "chapter": 3,
+    "verse": 13,
+    "verseEnd": 13,
+    "verses": [
+      {
+        "book": "Colossiens",
+        "chapter": 3,
+        "verse": 13,
+        "text": "Supportez-vous les uns les autres, et, si l'un a sujet de se plaindre de l'autre, pardonnez-vous réciproquement. De même que Christ vous a pardonné, pardonnez-vous aussi."
+      }
+    ]
+  },
+  {
+    "ref": "Hébreux 11:1",
+    "text": "Or la foi est une ferme assurance des choses qu'on espère, une démonstration de celles qu'on ne voit pas.",
+    "book": "Hébreux",
+    "chapter": 11,
+    "verse": 1,
+    "verseEnd": 1,
+    "verses": [
+      {
+        "book": "Hébreux",
+        "chapter": 11,
+        "verse": 1,
+        "text": "Or la foi est une ferme assurance des choses qu'on espère, une démonstration de celles qu'on ne voit pas."
+      }
+    ]
+  },
+  {
+    "ref": "Jacques 1:17",
+    "text": "toute grâce excellente et tout don parfait descendent d'en haut, du Père des lumières, chez lequel il n'y a ni changement ni ombre de variation.",
+    "book": "Jacques",
+    "chapter": 1,
+    "verse": 17,
+    "verseEnd": 17,
+    "verses": [
+      {
+        "book": "Jacques",
+        "chapter": 1,
+        "verse": 17,
+        "text": "toute grâce excellente et tout don parfait descendent d'en haut, du Père des lumières, chez lequel il n'y a ni changement ni ombre de variation."
+      }
+    ]
+  },
+  {
+    "ref": "1 Pierre 5:7",
+    "text": "et déchargez-vous sur lui de tous vos soucis, car lui-même prend soin de vous.",
+    "book": "1 Pierre",
+    "chapter": 5,
+    "verse": 7,
+    "verseEnd": 7,
+    "verses": [
+      {
+        "book": "1 Pierre",
+        "chapter": 5,
+        "verse": 7,
+        "text": "et déchargez-vous sur lui de tous vos soucis, car lui-même prend soin de vous."
+      }
+    ]
+  },
+  {
+    "ref": "Psaume 27:1",
+    "text": "De David. L'Eternel est ma lumière et mon salut: De qui aurais-je crainte? L'Eternel est le soutien de ma vie: De qui aurais-je peur?",
+    "book": "Psaume",
+    "chapter": 27,
+    "verse": 1,
+    "verseEnd": 1,
+    "verses": [
+      {
+        "book": "Psaume",
+        "chapter": 27,
+        "verse": 1,
+        "text": "De David. L'Eternel est ma lumière et mon salut: De qui aurais-je crainte? L'Eternel est le soutien de ma vie: De qui aurais-je peur?"
+      }
+    ]
+  },
+  {
+    "ref": "Galates 5:22-23",
+    "text": "Mais le fruit de l'Esprit, c'est l'amour, la joie, la paix, la patience, la bonté, la bénignité, la fidélité, la douceur, la tempérance; la loi n'est pas contre ces choses.",
+    "book": "Galates",
+    "chapter": 5,
+    "verse": 22,
+    "verseEnd": 23,
+    "verses": [
+      {
+        "book": "Galates",
+        "chapter": 5,
+        "verse": 22,
+        "text": "Mais le fruit de l'Esprit, c'est l'amour, la joie, la paix, la patience, la bonté, la bénignité, la fidélité,"
+      },
+      {
+        "book": "Galates",
+        "chapter": 5,
+        "verse": 23,
+        "text": "la douceur, la tempérance; la loi n'est pas contre ces choses."
+      }
+    ]
+  },
+  {
+    "ref": "Matthieu 22:37-39",
+    "text": "Jésus lui répondit: Tu aimeras le Seigneur, ton Dieu, de tout ton coeur, de toute ton âme, et de toute ta pensée. C'est le premier et le plus grand commandement. Et voici le second, qui lui est semblable: Tu aimeras ton prochain comme toi-même.",
+    "book": "Matthieu",
+    "chapter": 22,
+    "verse": 37,
+    "verseEnd": 39,
+    "verses": [
+      {
+        "book": "Matthieu",
+        "chapter": 22,
+        "verse": 37,
+        "text": "Jésus lui répondit: Tu aimeras le Seigneur, ton Dieu, de tout ton coeur, de toute ton âme, et de toute ta pensée."
+      },
+      {
+        "book": "Matthieu",
+        "chapter": 22,
+        "verse": 38,
+        "text": "C'est le premier et le plus grand commandement."
+      },
+      {
+        "book": "Matthieu",
+        "chapter": 22,
+        "verse": 39,
+        "text": "Et voici le second, qui lui est semblable: Tu aimeras ton prochain comme toi-même."
+      }
+    ]
+  },
+  {
+    "ref": "Apocalypse 21:4",
+    "text": "Il essuiera toute larme de leurs yeux, et la mort ne sera plus, et il n'y aura plus ni deuil, ni cri, ni douleur, car les premières choses ont disparu.",
+    "book": "Apocalypse",
+    "chapter": 21,
+    "verse": 4,
+    "verseEnd": 4,
+    "verses": [
+      {
+        "book": "Apocalypse",
+        "chapter": 21,
+        "verse": 4,
+        "text": "Il essuiera toute larme de leurs yeux, et la mort ne sera plus, et il n'y aura plus ni deuil, ni cri, ni douleur, car les premières choses ont disparu."
+      }
+    ]
+  }
 ];
 
-async function loadVOTD() {
+function loadVOTD() {
   const textEl = document.getElementById('votd-text');
   const refEl = document.getElementById('votd-ref');
   const dot = document.getElementById('loading-dot');
   if (dot) dot.remove();
   if (!textEl || !refEl) return;
-
-  try {
-    const day = new Date().getDate() + new Date().getMonth() * 31;
-    const pick = VOTD_REFS[day % VOTD_REFS.length];
-    const verseEnd = pick.verseEnd || pick.verse;
-    const bibleData = await getOfflineBibleData('/data/bibles/lsg.json');
-    const bookData = Array.isArray(bibleData) ? bibleData[pick.book - 1] : null;
-    const chapterData = bookData && Array.isArray(bookData.chapters) ? bookData.chapters[pick.chapter - 1] : null;
-    const sourceVerses = chapterData && Array.isArray(chapterData.verses) ? chapterData.verses : [];
-    const verses = sourceVerses
-      .filter(v => Number(v.verse) >= pick.verse && Number(v.verse) <= verseEnd)
-      .map(v => ({ book: bookData.name, chapter: pick.chapter, verse: Number(v.verse), text: v.text }));
-
-    if (!bookData || !verses.length) throw new Error('LSG verse not found: book ' + pick.book + ' ' + pick.chapter + ':' + pick.verse);
-
-    const bookName = bookData.name;
-    const verseText = verses.map(v => v.text).join(' ');
-    const ref = verseEnd !== pick.verse
-      ? bookName + ' ' + pick.chapter + ':' + pick.verse + '-' + verseEnd
-      : bookName + ' ' + pick.chapter + ':' + pick.verse;
-
-    textEl.textContent = verseText;
-    refEl.textContent = ref;
-    window._currentRef = ref;
-    window._currentText = verseText;
-    window._currentAudioVerses = verses;
-    window._currentAudioRange = {
-      book: bookName,
-      bible_version: 'LSG',
-      chapter_start: pick.chapter,
-      verse_start: pick.verse,
-      chapter_end: pick.chapter,
-      verse_end: verseEnd
-    };
-    const np = document.getElementById('audio-np');
-    if (np) np.textContent = '\u266A ' + ref;
-  } catch (err) {
-    console.warn('[SelahPoint] Verset du jour indisponible:', err);
-    textEl.textContent = 'Ta parole est une lampe \u00E0 mes pieds, Et une lumi\u00E8re sur mon sentier.';
-    refEl.textContent = 'Psaumes 119:105';
-    window._currentRef = 'Psaumes 119:105';
-    window._currentText = textEl.textContent;
-    window._currentAudioRange = { book: 'Psaumes', bible_version: 'LSG', chapter_start: 119, verse_start: 105, chapter_end: 119, verse_end: 105 };
-  }
+  const day = new Date().getDate() + new Date().getMonth() * 31;
+  const verse = VOTD_LIST[day % VOTD_LIST.length];
+  textEl.textContent = verse.text;
+  refEl.textContent = verse.ref;
+  window._currentRef = verse.ref;
+  window._currentText = verse.text;
+  window._currentAudioVerses = verse.verses;
+  window._currentAudioRange = {
+    book: verse.book,
+    bible_version: 'LSG',
+    chapter_start: verse.chapter,
+    verse_start: verse.verse,
+    chapter_end: verse.chapter,
+    verse_end: verse.verseEnd
+  };
+  const np = document.getElementById('audio-np');
+  if (np) np.textContent = '\u266A ' + verse.ref;
 }
 loadVOTD();
 
@@ -1520,6 +1973,6 @@ function renderAlarms() {
 window.SC_getCurrentRef  = () => window._currentRef  || '';
 window.SC_getCurrentText = () => window._currentText || '';
 </script>
-<script src="js/pipeline2/kb-navigator.js?v=20260612-lsg4"></script>
+<script src="js/pipeline2/kb-navigator.js?v=20260612-lsg5"></script>
 </body>
 </html>
