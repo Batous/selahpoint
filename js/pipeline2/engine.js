@@ -28,7 +28,11 @@ function extractVerses(bookData, chapterStart, verseStart, chapterEnd, verseEnd,
     }
   } else if (Array.isArray(bookData)) {
     const book = bookData.find(b =>
-      normalizeStr(b.name || b.slug) === lookupKey || bookMatchesValue(lookupKey, b.name)
+      normalizeStr(b.name) === lookupKey ||
+      normalizeStr(b.slug) === lookupKey ||
+      bookMatchesValue(lookupKey, b.name) ||
+      bookMatchesValue(lookupKey, b.slug) ||
+      (typeof FR_TO_EN_BOOK !== 'undefined' && normalizeStr(FR_TO_EN_BOOK[normalizeStr(b.name)]) === lookupKey)
     );
     if (book && book.chapters) {
       for (const chObj of book.chapters) {
@@ -147,7 +151,7 @@ function playVoiceFromCdn(range, verses = []) {
   }
 
   const verDir    = String(range.bible_version || 'KJV').toLowerCase();
-  const lookupKey = String(range.book).trim().toLowerCase();
+  const lookupKey = normalizeStr(range.book);
   const bookNum   = BIBLE_NUM_MAP[lookupKey];
   if (!bookNum) { addLog(`Audio skipped: "${range.book}" not in map`, 'warn'); return Promise.resolve(); }
 
@@ -176,7 +180,7 @@ function playVoiceFromCdn(range, verses = []) {
 }
 
 function buildVerseAudioUrl(book, chapter, verse) {
-  const lookupKey = String(book || '').trim().toLowerCase();
+  const lookupKey = normalizeStr(book);
   const bookNum = BIBLE_NUM_MAP[lookupKey];
   if (!bookNum) return '';
   const pad = n => String(n).padStart(3, '0');

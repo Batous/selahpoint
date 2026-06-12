@@ -1,7 +1,8 @@
 (function () {
   'use strict';
 
-  const JSON_PATH = '/data/bibles/kjv.json';
+  const KJV_PATH = '/data/bibles/kjv.json';
+  const LSG_PATH = '/data/bibles/lsg.json';
   const state = {
     step: 'BOOK',
     bookId: '',
@@ -14,6 +15,13 @@
 
   function bridge() {
     return window.SELAH_KB || {};
+  }
+  function activeVersion() {
+    return String(window.SC_FORCE_LANG || window.SP_CONFIG?.bibleVersion || 'KJV').toUpperCase();
+  }
+
+  function activeJsonPath() {
+    return activeVersion() === 'LSG' ? LSG_PATH : KJV_PATH;
   }
 
   function books() {
@@ -131,15 +139,17 @@
   }
 
   async function getBibleData() {
-    if (window.bibleData) return window.bibleData;
-    if (window.bibleCache && window.bibleCache[JSON_PATH]) return window.bibleCache[JSON_PATH];
-    if (typeof getOfflineBibleData === 'function') return getOfflineBibleData(JSON_PATH);
-    const res = await fetch(JSON_PATH);
+    const path = activeJsonPath();
+    if (window.bibleData && window.bibleDataPath === path) return window.bibleData;
+    if (window.bibleCache && window.bibleCache[path]) return window.bibleCache[path];
+    if (typeof getOfflineBibleData === 'function') return getOfflineBibleData(path);
+    const res = await fetch(path);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     window.bibleCache = window.bibleCache || {};
-    window.bibleCache[JSON_PATH] = data;
+    window.bibleCache[path] = data;
     window.bibleData = data;
+    window.bibleDataPath = path;
     return data;
   }
 
@@ -422,7 +432,7 @@
         : [];
       window._currentAudioRange = {
         book: state.bookName,
-        bible_version: 'KJV',
+        bible_version: activeVersion(),
         chapter_start: state.chapter,
         verse_start: start,
         chapter_end: state.chapter,

@@ -24,28 +24,29 @@ const BIBLE_NUM_MAP = {
 };
 
 const EN_TO_FR_BOOK = {
-  'Genesis':'Genèse','Exodus':'Exode','Leviticus':'Lévitique',
-  'Numbers':'Nombres','Deuteronomy':'Deutéronome','Joshua':'Josué',
-  'Judges':'Juges','Psalms':'Psaumes','Song of Solomon':'Cantique des cantiques',
-  'Songs of Solomon':'Cantique des cantiques','Isaiah':'Ésaïe',
-  'Ezekiel':'Ézéchiel','Hosea':'Osée','Obadiah':'Abdias',
-  'Micah':'Michée','Habakkuk':'Habacuc','Zephaniah':'Sophonie',
-  'Haggai':'Aggée','Zechariah':'Zacharie','Malachi':'Malachie',
-  'Mark':'Marc','Luke':'Luc','John':'Jean','Acts':'Actes',
-  'Romans':'Romains','James':'Jacques','Revelation':'Apocalypse',
-  '1 Kings':'1 Rois','2 Kings':'2 Rois','1 John':'1 Jean',
-  '2 John':'2 Jean','3 John':'3 Jean',
-  '1 Peter':'1 Pierre','2 Peter':'2 Pierre','Titus':'Tite',
-  '1 Chronicles':'1 Chroniques','2 Chronicles':'2 Chroniques',
-  'Nehemiah':'Néhémie','Proverbs':'Proverbes','Ecclesiastes':'Ecclésiaste',
-  'Jeremiah':'Jérémie','Joel':'Joël','Jonah':'Jonas','Nahum':'Nahoum',
-  'Matthew':'Matthieu','Galatians':'Galates','Ephesians':'Éphésiens',
-  'Philippians':'Philippiens','Colossians':'Colossiens',
-  '1 Corinthians':'1 Corinthiens','2 Corinthians':'2 Corinthiens',
-  '1 Thessalonians':'1 Thessaloniciens','2 Thessalonians':'2 Thessaloniciens',
-  '1 Timothy':'1 Timothée','2 Timothy':'2 Timothée',
-  'Philemon':'Philémon','Hebrews':'Hébreux',
+  'Genesis':'Genèse','Exodus':'Exode','Leviticus':'Lévitique','Numbers':'Nombres','Deuteronomy':'Deutéronome',
+  'Joshua':'Josué','Judges':'Juges','Ruth':'Ruth','1 Samuel':'1 Samuel','2 Samuel':'2 Samuel',
+  '1 Kings':'1 Rois','2 Kings':'2 Rois','1 Chronicles':'1 Chroniques','2 Chronicles':'2 Chroniques',
+  'Ezra':'Esdras','Nehemiah':'Néhémie','Esther':'Esther','Job':'Job','Psalms':'Psaumes',
+  'Proverbs':'Proverbes','Ecclesiastes':'Ecclésiaste','Song of Solomon':'Cantique des cantiques',
+  'Songs of Solomon':'Cantique des cantiques','Song of Songs':'Cantique des cantiques',
+  'Isaiah':'Ésaïe','Jeremiah':'Jérémie','Lamentations':'Lamentations','Ezekiel':'Ézéchiel','Daniel':'Daniel',
+  'Hosea':'Osée','Joel':'Joël','Amos':'Amos','Obadiah':'Abdias','Jonah':'Jonas','Micah':'Michée',
+  'Nahum':'Nahum','Habakkuk':'Habacuc','Zephaniah':'Sophonie','Haggai':'Aggée','Zechariah':'Zacharie','Malachi':'Malachie',
+  'Matthew':'Matthieu','Mark':'Marc','Luke':'Luc','John':'Jean','Acts':'Actes','Romans':'Romains',
+  '1 Corinthians':'1 Corinthiens','2 Corinthians':'2 Corinthiens','Galatians':'Galates','Ephesians':'Éphésiens',
+  'Philippians':'Philippiens','Colossians':'Colossiens','1 Thessalonians':'1 Thessaloniciens','2 Thessalonians':'2 Thessaloniciens',
+  '1 Timothy':'1 Timothée','2 Timothy':'2 Timothée','Titus':'Tite','Philemon':'Philémon','Hebrews':'Hébreux',
+  'James':'Jacques','1 Peter':'1 Pierre','2 Peter':'2 Pierre','1 John':'1 Jean','2 John':'2 Jean','3 John':'3 Jean',
+  'Jude':'Jude','Revelation':'Apocalypse'
 };
+const FR_TO_EN_BOOK = Object.keys(EN_TO_FR_BOOK).reduce((map, en) => {
+  map[normalizeStr(EN_TO_FR_BOOK[en])] = en;
+  return map;
+}, {});
+Object.entries(EN_TO_FR_BOOK).forEach(([en, fr]) => {
+  BIBLE_NUM_MAP[normalizeStr(fr)] = BIBLE_NUM_MAP[normalizeStr(en)];
+});
 
 const SAMPLE_BIBLE = {
   "kjv": {
